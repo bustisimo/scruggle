@@ -10,6 +10,7 @@ import {
 } from './board.js';
 import { openShop, buyItem } from './shop.js';
 import { loadAchievements, checkAchievements, getUnlockedCount } from './achievements.js';
+import { BOSSES, getBossForRound, applyBossReward } from './bosses.js';
 
 async function init() {
     loadAchievements();
@@ -190,6 +191,8 @@ function initRound(isNewRun) {
         gameState.shopOffers = [];
         gameState.rerollCost = 2;
         gameState.purchasedLetters = [];
+        gameState.activeBoss = null;
+        gameState.defeatedBosses = [];
     } else {
         gameState.currentRound++;
         gameState.shopOffers = [];
@@ -278,9 +281,53 @@ function initRound(isNewRun) {
 
     shuffle(gameState.bag);
     drawTiles();
+
+    // Check for boss encounter (non-new-run rounds only)
+    const boss = getBossForRound(gameState.currentRound, gameState.defeatedBosses);
+    if (boss) {
+        gameState.activeBoss = boss.id;
+        saveGame();
+        showBossIntro(boss);
+        return;
+    }
+
     saveGame();
 }
 
+function showBossIntro(boss) {
+    document.getElementById('shop-screen').style.display = 'none';
+    document.getElementById('game-container').style.display = 'none';
+
+    document.getElementById('boss-intro-emoji').innerText = boss.emoji;
+    document.getElementById('boss-intro-art').innerText = boss.art;
+    document.getElementById('boss-intro-name').innerText = boss.name;
+    document.getElementById('boss-intro-text').innerText = boss.introText;
+
+    const rulesEl = document.getElementById('boss-intro-rules');
+    rulesEl.innerHTML = '';
+    boss.rules.forEach(rule => {
+        const li = document.createElement('li');
+        li.innerText = rule;
+        rulesEl.appendChild(li);
+    });
+
+    document.getElementById('boss-intro-screen').style.display = 'flex';
+}
+
+function showBossDefeat(boss) {
+    document.getElementById('game-container').style.display = 'none';
+    document.getElementById('boss-defeat-emoji').innerText = boss.emoji;
+    document.getElementById('boss-defeat-name').innerText = boss.name;
+
+    const reward = applyBossReward(gameState, boss);
+    document.getElementById('boss-defeat-reward').innerText = reward.message;
+
+    gameState.defeatedBosses.push(boss.id);
+    gameState.activeBoss = null;
+    saveGame();
+
+    document.getElementById('boss-defeat-screen').style.display = 'flex';
+}
 
 function drawTiles() {
     while (gameState.hand.length < gameState.handSize && gameState.bag.length > 0) {
@@ -327,6 +374,18 @@ function onTileClick(index) {
 
 function checkWinLoss() {
     if (gameState.score >= gameState.targetScore) {
+        // Check if this was a boss round
+        if (gameState.activeBoss) {
+            const boss = BOSSES[gameState.activeBoss];
+            if (boss) {
+                showBossDefeat(boss);
+                incrementWins();
+                const stats = getStats();
+                checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords, bossDefeated: boss.id });
+                return;
+            }
+        }
+
         const bonus = gameState.handsLeft * 10;
         gameState.gold += bonus;
         saveGame();
@@ -588,17 +647,41 @@ function setupEventListeners() {
         gameState.gold += turnGold;
         gameState.handsLeft--;
 
+        // Boss mechanic: Gilded Golem doubles gold
+        if (gameState.activeBoss === 'gilded_golem') {
+            const doubledGold = turnGold;
+            gameState.gold += doubledGold;
+        }
+
         updateStats(gameState.currentRound, turnGold, turnWordsCount);
 
         // Check achievements after submission
         const stats = getStats();
         checkAchievements(gameState, stats, { totalWords: stats.totalWords });
 
+        // Boss mechanic: Word Eater — collect tiles from 4+ letter words to remove
+        let eatenTiles = new Set();
+        if (gameState.activeBoss === 'word_eater') {
+            words.forEach(w => {
+                const hasNewTile = w.coords.some(c => !gameState.board[c.y][c.x].isLocked);
+                if (hasNewTile && BOSSES.word_eater.shouldEatWord(w.word)) {
+                    w.coords.forEach(c => {
+                        if (!gameState.board[c.y][c.x].isLocked) {
+                            eatenTiles.add(`${c.x},${c.y}`);
+                        }
+                    });
+                }
+            });
+        }
+
         for (let y = 0; y < GRID_SIZE; y++) {
             for (let x = 0; x < GRID_SIZE; x++) {
                 const tile = gameState.board[y][x];
                 if (tile && !tile.isLocked) {
-                    if (tile.ink === 'void') {
+                    // Word Eater: remove tiles from eaten words
+                    if (eatenTiles.has(`${x},${y}`)) {
+                        gameState.board[y][x] = null;
+                    } else if (tile.ink === 'void') {
                         gameState.board[y][x] = null;
                     } else if (tile.ink === 'ice') {
                         tile.ink = null; // Melts, stays unlocked!
@@ -617,8 +700,19 @@ function setupEventListeners() {
         saveGame();
         renderUI();
 
+        // Boss mechanic: Ink Thief steals tiles after submission
+        let bossMessage = '';
+        if (gameState.activeBoss === 'ink_thief') {
+            const result = BOSSES.ink_thief.onSubmission(gameState);
+            if (result.message) bossMessage = result.message;
+        }
+
         // Populate and display the breakdown modal
-        document.getElementById('breakdown-details').innerHTML = breakdownHTML || '<div style="text-align: center; color: #aaa; padding: 20px 0;">No new words scored.</div>';
+        let content = breakdownHTML || '<div style="text-align: center; color: #aaa; padding: 20px 0;">No new words scored.</div>';
+        if (bossMessage) {
+            content = `<div style="border: 2px solid #e91e63; border-radius: 8px; padding: 10px; margin-bottom: 15px; background-color: rgba(233,30,99,0.1); color: #e91e63; font-weight: bold; font-family: 'Georgia', serif; font-size: 14px;">${bossMessage}</div>` + content;
+        }
+        document.getElementById('breakdown-details').innerHTML = content;
         document.getElementById('breakdown-total-score').innerText = turnScore;
         document.getElementById('breakdown-total-gold').innerText = turnGold;
         document.getElementById('breakdown-modal').style.display = 'flex';
@@ -699,6 +793,35 @@ function setupEventListeners() {
         closeBreakdownBtn.onclick = () => {
             document.getElementById('breakdown-modal').style.display = 'none';
             checkWinLoss();
+        };
+    }
+
+    // Boss intro "Fight" button
+    const bossFightBtn = document.getElementById('boss-intro-fight-btn');
+    if (bossFightBtn) {
+        bossFightBtn.onclick = () => {
+            document.getElementById('boss-intro-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+
+            const boss = BOSSES[gameState.activeBoss];
+            if (boss && boss.onBossStart) {
+                boss.onBossStart(gameState);
+            }
+            renderUI();
+        };
+    }
+
+    // Boss defeat "Continue" button
+    const bossDefeatBtn = document.getElementById('boss-defeat-continue-btn');
+    if (bossDefeatBtn) {
+        bossDefeatBtn.onclick = () => {
+            document.getElementById('boss-defeat-screen').style.display = 'none';
+            // Show round transition screen
+            const trans = document.getElementById('round-transition');
+            document.getElementById('trans-round').innerText = gameState.currentRound;
+            document.getElementById('trans-gold').innerText = gameState.gold;
+            document.getElementById('trans-items').innerText = gameState.inventory.length;
+            trans.classList.add('show');
         };
     }
 }

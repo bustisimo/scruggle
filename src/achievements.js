@@ -32,6 +32,8 @@ export const achievements = [
         }},
     { id: 'first_win', name: 'First Victory', desc: 'Win your first round', icon: '🎉',
         check(state, stats, context) { return context.roundWon; }},
+    { id: 'boss_slayer', name: 'Boss Slayer', desc: 'Defeat your first boss', icon: '⚔️',
+        check(state, stats, context) { return !!context.bossDefeated; }},
 ];
 
 let unlockedAchievements = [];
@@ -136,6 +138,7 @@ export function getAchievementProgress(achId) {
         case 'perfectionist': return 'Win with all 4 hands';
         case 'collector': return 'Own all 7 stickers';
         case 'first_win': return stats.totalWords > 0 ? 'Win any round' : 'Win your first round';
+        case 'boss_slayer': return 'Defeat any boss (round 3+)';
         default: return '';
     }
 }

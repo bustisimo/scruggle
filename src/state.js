@@ -307,7 +307,9 @@ export const gameState = {
     rerollCost: 2,
     purchasedLetters: [],
     goldenTicket: false,
-    startCell: { x: 3, y: 3 }
+    startCell: { x: 3, y: 3 },
+    activeBoss: null,
+    defeatedBosses: []
 };
 
 export function saveGame() {
@@ -330,7 +332,9 @@ export function saveGame() {
         rerollCost: gameState.rerollCost,
         purchasedLetters: gameState.purchasedLetters,
         startCell: gameState.startCell,
-        goldenTicket: gameState.goldenTicket
+        goldenTicket: gameState.goldenTicket,
+        activeBoss: gameState.activeBoss,
+        defeatedBosses: gameState.defeatedBosses
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
@@ -359,6 +363,8 @@ export function loadSavedGame() {
         gameState.purchasedLetters = data.purchasedLetters || [];
         gameState.startCell = data.startCell || { x: 3, y: 3 };
         gameState.goldenTicket = data.goldenTicket || false;
+        gameState.activeBoss = data.activeBoss || null;
+        gameState.defeatedBosses = data.defeatedBosses || [];
         return true;
     } catch (e) {
         return false;

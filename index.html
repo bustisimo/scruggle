@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scruggle MVP - Web Prototype</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="start-screen">
+    <div id="start-content">
+        <div id="game-title-tiles"></div>
+        <p class="game-subtitle">A Roguelike Scrabble Adventure</p>
+
+        <div id="main-menu-view">
+            <div class="menu-buttons">
+                <button id="continue-run-btn" class="menu-btn continue-btn">Continue Run</button>
+                <button id="new-run-trigger-btn" class="menu-btn new-btn">New Run</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="open-stats-btn" class="menu-btn" style="background-color: #7b1fa2; flex: 1;">Stats</button>
+                    <button id="open-dict-btn" class="menu-btn" style="background-color: #5d4037; flex: 1;">Dictionary</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="bag-selection-view" style="display: none;">
+            <div id="font-bag-selector">
+                <h3>Select Starting Font Bag</h3>
+                <div id="font-bag-options"></div>
+            </div>
+            <div class="menu-buttons">
+                <button id="new-run-menu-btn" class="menu-btn new-btn">Confirm & Start</button>
+                <button id="back-to-menu-btn" class="menu-btn" style="background-color: #9e9e9e;">Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="game-container">
+    <div id="inventory"></div>
+    <div id="scoreboard">
+        <div class="score-box current-score-box">
+            <div class="score-label">CURRENT SCORE</div>
+            <div id="score" class="score-value">0</div>
+        </div>
+        <div class="score-divider">/</div>
+        <div class="score-box target-score-box">
+            <div class="score-label">TARGET SCORE</div>
+            <div id="target" class="score-value">30</div>
+        </div>
+    </div>
+    <div id="stats">
+        <div>Round: <span id="round">1</span></div>
+        <div style="color: #ffd700;">Gold: <span id="gold">0</span></div>
+        <div style="color: #03a9f4;">Hands: <span id="hands">4</span></div>
+        <div style="color: #9e9e9e;">Discards: <span id="discards">3</span></div>
+        <div style="display: flex; gap: 5px;">
+            <button id="view-bag-btn" class="stats-badge">Bag (<span id="bag-count-badge">0</span>)</button>
+            <button id="view-dict-game-btn" class="stats-badge" style="background-color: #5d4037;">Dict</button>
+        </div>
+    </div>
+    <div id="bag-info">Tiles Left: <span id="bag-count">0</span></div>
+
+    <div id="sticker-banner" style="display: none;"></div>
+    <div id="board"></div>
+
+    <div id="hand-container">
+        <div id="hand"></div>
+        <button id="shuffle-hand-btn" title="Shuffle Hand">🔀</button>
+    </div>
+
+    <div id="controls">
+        <button id="submit-btn" disabled>Submit Word</button>
+        <button id="swap-btn">Swap Selected</button>
+        <button id="reset-btn" style="background-color: var(--invalid-color);">Reset Game</button>
+    </div>
+</div>
+
+<div id="shop-modal">
+    <div id="shop-content">
+        <h2>Roguelike Shop</h2>
+        <div id="shop-items"></div>
+        <button id="start-round-btn" style="margin-top: 20px; width: 100%; background-color: #2196f3;">Start Next Round</button>
+    </div>
+</div>
+
+<div id="win-modal">
+    <div id="win-content">
+        <h1 style="color: var(--valid-color);">ROUND WON!</h1>
+        <p id="win-message"></p>
+        <button id="next-round-btn" style="width: 100%;">Continue</button>
+    </div>
+</div>
+
+<div id="loss-modal">
+    <div id="loss-content">
+        <h1 style="color: var(--invalid-color);">GAME OVER</h1>
+        <p>You ran out of hands before reaching the target score.</p>
+        <button id="new-run-btn" style="width: 100%; background-color: var(--invalid-color);">Restart Run</button>
+    </div>
+</div>
+
+<div id="breakdown-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 2000;">
+    <div style="background-color: var(--parchment); color: var(--tile-text); border: 6px double var(--mahogany); border-radius: 12px; padding: 25px; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; text-align: center; box-sizing: border-box; font-family: 'Georgia', serif;">
+        <h2 style="color: var(--mahogany); margin-top: 0; border-bottom: 2px solid rgba(90, 46, 23, 0.2); padding-bottom: 10px;">Submission Breakdown</h2>
+        <div id="breakdown-details" style="max-height: 280px; overflow-y: auto; text-align: left; margin: 15px 0; padding-right: 5px;"></div>
+        <div style="display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; border-top: 2px solid rgba(90, 46, 23, 0.2); padding-top: 15px; margin-bottom: 20px;">
+            <div style="color: var(--valid-color);">Total Score: +<span id="breakdown-total-score">0</span></div>
+            <div style="color: #f57f17;">Total Gold: +<span id="breakdown-total-gold">0</span></div>
+        </div>
+        <button id="close-breakdown-btn" style="width: 100%; padding: 12px; background-color: var(--mahogany); color: var(--parchment); border: 2px solid var(--parchment); border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,0.3);">Awesome!</button>
+    </div>
+</div>
+
+<div id="bag-drawer" class="drawer">
+    <div class="drawer-header">
+        <h3>Tiles Remaining</h3>
+        <button id="close-bag-btn" class="close-drawer-btn">&times;</button>
+    </div>
+    <div id="bag-drawer-tiles" class="mini-tiles-container"></div>
+</div>
+
+<div id="stats-drawer" class="drawer">
+    <div class="drawer-header">
+        <h3>Your Legacy Stats</h3>
+        <button id="close-stats-btn" class="close-drawer-btn">&times;</button>
+    </div>
+    <div class="stats-card" style="margin-top: 0; background: none; border: none; padding: 0;">
+        <div class="legacy-stat">
+            <span style="color: var(--parchment)">Highest Round Reached:</span>
+            <span id="stat-highest-round" class="stat-val" style="color: var(--parchment)">1</span>
+        </div>
+        <div class="legacy-stat">
+            <span style="color: var(--parchment)">Total Gold Earned:</span>
+            <span id="stat-total-gold" class="stat-val" style="color: #ffd700;">0</span>
+        </div>
+        <div class="legacy-stat">
+            <span style="color: var(--parchment)">Total Words Submitted:</span>
+            <span id="stat-total-words" class="stat-val" style="color: #03a9f4;">0</span>
+        </div>
+    </div>
+</div>
+
+<div id="dictionary-drawer" class="drawer">
+    <div class="drawer-header">
+        <h3>Scruggle Dictionary</h3>
+        <button id="close-dict-btn" class="close-drawer-btn">&times;</button>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="dict-search" placeholder="Search words (min 3 chars)..." style="width: 100%; padding: 12px; border-radius: 6px; border: 2px solid var(--mahogany); background-color: var(--parchment); color: var(--tile-text); font-family: 'Georgia', serif; font-size: 16px; box-sizing: border-box;">
+    </div>
+    <div id="dict-results" style="flex: 1; overflow-y: auto; color: var(--parchment); font-family: 'Georgia', serif; line-height: 1.6; font-size: 18px;">
+        <p style="opacity: 0.7; font-style: italic; font-size: 14px;">Search over 270,000 valid words.</p>
+    </div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>

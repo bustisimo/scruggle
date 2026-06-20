@@ -621,7 +621,7 @@ function setupEventListeners() {
     };
 
     document.getElementById('start-round-btn').onclick = () => {
-        document.getElementById('shop-modal').style.display = 'none';
+        document.getElementById('shop-screen').style.display = 'none';
         initRound(false);
         renderUI();
     };

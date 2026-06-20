@@ -77,11 +77,25 @@
     </div>
 </div>
 
-<div id="shop-modal">
-    <div id="shop-content">
-        <h2>Roguelike Shop</h2>
-        <div id="shop-items"></div>
-        <button id="start-round-btn" style="margin-top: 20px; width: 100%; background-color: #2196f3;">Start Next Round</button>
+<div id="shop-screen">
+    <div class="shop-screen-overlay">
+        <div class="shop-screen-header">
+            <div class="shop-gold-display">
+                <span class="shop-gold-icon">🪙</span>
+                <span id="shop-gold-amount">0</span> Gold
+            </div>
+            <button id="view-board-toggle" class="shop-view-board-btn">👁 View Board</button>
+        </div>
+
+        <div class="shop-screen-body">
+            <h2 class="shop-title">Roguelike Shop</h2>
+            <div id="shop-items"></div>
+        </div>
+
+        <div class="shop-screen-footer">
+            <div id="shop-reroll-section"></div>
+            <button id="start-round-btn" class="shop-start-btn">Start Next Round</button>
+        </div>
     </div>
 </div>
 

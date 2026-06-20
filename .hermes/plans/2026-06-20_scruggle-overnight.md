@@ -24,7 +24,7 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
   - Add gold counter at top, item grid in center, "Start Next Round" button at bottom
   - Include a "View Board" toggle to peek at the board state without closing shop
 
-- [ ] **Task 1.2: Rewrite shop CSS for full-screen layout**
+- [x] **Task 1.2: Rewrite shop CSS for full-screen layout**
   - **Files:** `style.css`
   - Full-screen dark overlay with parchment-colored interior sections
   - 3-column grid for shop items (2-column on mobile)
@@ -32,7 +32,7 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
   - Gold display prominently at top with coin animation
   - Smooth slide-in transition
 
-- [ ] **Task 1.3: Update shop.js for full-screen rendering**
+- [x] **Task 1.3: Update shop.js for full-screen rendering**
   - **Files:** `src/shop.js`
   - `openShop()` → show `#shop-screen` instead of modal
   - Render gold count in shop header
@@ -42,20 +42,20 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
 
 ### Phase 2: New Font Bags
 
-- [ ] **Task 2.1: Add 3 new font bags to state.js**
+- [x] **Task 2.1: Add 3 new font bags to state.js**
   - **Files:** `src/state.js` (in `FONT_BAGS` object, after `cursive`)
   - **Monospace Sans**: Balanced consonants, hand size 7, desc: "Clean, geometric letter distribution with strong consonants."
   - **Decorative Drop Cap**: High-value letters boosted, hand size 5, desc: "Fewer tiles but each packs a punch. High-value letters are abundant."
   - **Italic Script**: Extra wildcard-like distribution, hand size 8, desc: "Fluid and flexible. More common letters for easier word building."
 
-- [ ] **Task 2.2: Add bag preview stats on selection screen**
+- [x] **Task 2.2: Add bag preview stats on selection screen**
   - **Files:** `src/main.js` (`showStartScreen()`), `style.css`
   - Show hand size, vowel/consonant ratio, and average tile value on each bag card
   - Add subtle color coding to bag cards
 
 ### Phase 3: Achievements System
 
-- [ ] **Task 3.1: Create achievements module**
+- [x] **Task 3.1: Create achievements module**
   - **Files:** Create `src/achievements.js`
   - Define achievement list with id, name, desc, icon, and unlock condition function
   - Initial set of 12 achievements:
@@ -72,13 +72,13 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
    11. "Perfectionist" — Win a round with 4 hands remaining
    12. "Collector" — Own every sticker type
 
-- [ ] **Task 3.2: Add achievement checking and notification**
+- [x] **Task 3.2: Add achievement checking and notification**
   - **Files:** `src/achievements.js`, `src/main.js`, `style.css`
   - `checkAchievements()` function called after each submission and round end
   - Toast notification (bottom-right, slides in, auto-dismisses after 4s)
   - Save unlocked achievements to localStorage
 
-- [ ] **Task 3.3: Add achievements drawer to UI**
+- [x] **Task 3.3: Add achievements drawer to UI**
   - **Files:** `index.html`, `style.css`, `src/main.js`
   - New drawer accessible from start screen and in-game stats area
   - Shows locked (greyed out) and unlocked (colored) achievements
@@ -86,19 +86,19 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
 
 ### Phase 4: More Shop Items
 
-- [ ] **Task 4.1: Add 4 new bookmarks**
+- [x] **Task 4.1: Add 4 new bookmarks**
   - **Files:** `src/state.js` (in `bookmarksRegistry`)
   1. **Alchemist** (25g): "Ink tiles are worth +3 extra gold when scored."
   2. **Architect** (30g): "The center star gives 2x word multiplier instead of DW."
   3. **Hoarder** (20g): "Start each round with +5 gold."
   4. **Recycler** (20g): "Discarding tiles refunds 1 gold per tile."
 
-- [ ] **Task 4.2: Add 2 new ink packs**
+- [x] **Task 4.2: Add 2 new ink packs**
   - **Files:** `src/state.js` (in `shopItems`)
   1. **Storm Ink Pack** (20g): "Apply Storm Ink to 2 tiles. Storm tiles chain lightning: +3 score to adjacent words."
   2. **Echo Ink Pack** (15g): "Apply Echo Ink to 3 tiles. Echo tiles give +2 score when reused in future submissions."
 
-- [ ] **Task 4.3: Add utility shop items**
+- [x] **Task 4.3: Add utility shop items**
   - **Files:** `src/state.js` (in `shopItems`)
   1. **Hand Expansion** (30g): "Permanently increase hand size by 1." 
   2. **Bag Trimmer** (10g): "Remove 5 random low-value tiles from your bag."
@@ -106,23 +106,23 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
 
 ### Phase 5: UI/UX Polish
 
-- [ ] **Task 5.1: Add smooth score/gold counter animation**
+- [x] **Task 5.1: Add smooth score/gold counter animation**
   - **Files:** `src/board.js`, `style.css`
   - When score or gold changes, animate the number counting up/down
   - Gold sparkle particles when earning gold
 
-- [ ] **Task 5.2: Improve tile placement feedback**
+- [x] **Task 5.2: Improve tile placement feedback**
   - **Files:** `src/board.js`, `style.css`
   - Placed tiles get a subtle "snap" animation (scale bounce)
   - Invalid placements pulse red briefly
   - Word highlight: when a valid word is formed, briefly highlight all its tiles
 
-- [ ] **Task 5.3: Add subtle background particles/ambiance**
+- [x] **Task 5.3: Add subtle background particles/ambiance**
   - **Files:** `style.css`, `index.html`
   - Floating dust motes or subtle sparkle particles in the background
   - Pure CSS animation, no JS overhead
 
-- [ ] **Task 5.4: Improve round transition screen**
+- [x] **Task 5.4: Improve round transition screen**
   - **Files:** `index.html`, `style.css`
   - Between rounds, show a stylized "Round N Complete!" screen with stats recap
   - Show gold earned, words submitted, items owned
@@ -130,13 +130,13 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
 
 ### Phase 6: Progression & Boss System
 
-- [ ] **Task 6.1: Add run-based meta-progression**
+- [x] **Task 6.1: Add run-based meta-progression**
   - **Files:** `src/stats.js`, `src/state.js`
   - Track "total runs completed" and "total runs won"
   - Unlock cosmetic title based on wins: Novice (0), Adept (1), Expert (3), Master (5), Grandmaster (10)
   - Display title on start screen and stats drawer
 
-- [ ] **Task 6.2: Add 3 boss encounters**
+- [x] **Task 6.2: Add 3 boss encounters**
   - **Files:** `src/state.js`, `src/main.js`, `index.html`  
   - Bosses appear every 3 rounds (rounds 3, 6, 9...)
   - **Boss 1 — The Ink Thief**: Steals 2 random tiles from your hand each submission. Beat by reaching target score. Reward: Rare ink pack.
@@ -144,7 +144,7 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
   - **Boss 3 — The Gilded Golem**: Target score is 1.5x higher, but all gold earnings are doubled. Reward: 100 bonus gold.
   - Boss intro screen with name, artwork (ASCII/emoji), and special rules
 
-- [ ] **Task 6.3: Add boss defeat rewards**
+- [x] **Task 6.3: Add boss defeat rewards**
   - **Files:** `src/main.js`, `src/state.js`
   - After defeating a boss: victory screen with reward display
   - Boss-specific rewards added to inventory/gameState

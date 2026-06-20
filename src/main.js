@@ -112,6 +112,12 @@ function showStartScreen() {
             card.innerHTML = `
                 <div class="font-bag-name">${bag.name}</div>
                 <div class="font-bag-desc">${bag.desc}</div>
+                <div class="font-bag-stats">
+                    <span class="bag-stat">🃏 ${bag.handSize} hand</span>
+                    <span class="bag-stat">📦 ${Object.values(bag.distribution).reduce((s, d) => s + d.count, 0)} tiles</span>
+                    <span class="bag-stat">⭐ ${(Object.values(bag.distribution).reduce((s, d) => s + d.val * d.count, 0) / Object.values(bag.distribution).reduce((s, d) => s + d.count, 0)).toFixed(1)} avg</span>
+                    <span class="bag-stat">🔤 ${Object.entries(bag.distribution).filter(([l]) => 'AEIOU'.includes(l)).reduce((s, [,d]) => s + d.count, 0)} vowels</span>
+                </div>
             `;
             if (!hasSave) {
                 card.onclick = () => {

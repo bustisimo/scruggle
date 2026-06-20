@@ -888,6 +888,22 @@ button:disabled {
     line-height: 1.4;
 }
 
+.font-bag-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(90, 46, 23, 0.1);
+}
+
+.bag-stat {
+    font-size: 11px;
+    color: #5a2e17;
+    font-family: 'Georgia', serif;
+    opacity: 0.75;
+}
+
 .menu-buttons {
     display: flex;
     flex-direction: column;

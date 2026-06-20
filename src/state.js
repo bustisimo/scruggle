@@ -56,6 +56,51 @@ export const FONT_BAGS = {
             'U': {count: 8, val: 1}, 'V': {count: 1, val: 4}, 'W': {count: 1, val: 4}, 'X': {count: 1, val: 8},
             'Y': {count: 2, val: 4}, 'Z': {count: 1, val: 10}
         }
+    },
+    monospace: {
+        id: 'monospace',
+        name: 'Monospace Sans',
+        desc: 'Clean, geometric letter distribution. Strong consonants, balanced vowels. Hand size: 7.',
+        handSize: 7,
+        distribution: {
+            'A': {count: 7, val: 1}, 'B': {count: 2, val: 3}, 'C': {count: 3, val: 3}, 'D': {count: 5, val: 2},
+            'E': {count: 9, val: 1}, 'F': {count: 2, val: 4}, 'G': {count: 3, val: 2}, 'H': {count: 3, val: 4},
+            'I': {count: 7, val: 1}, 'J': {count: 1, val: 8}, 'K': {count: 1, val: 5}, 'L': {count: 5, val: 1},
+            'M': {count: 2, val: 3}, 'N': {count: 7, val: 1}, 'O': {count: 6, val: 1}, 'P': {count: 2, val: 3},
+            'Q': {count: 1, val: 10}, 'R': {count: 7, val: 1}, 'S': {count: 5, val: 1}, 'T': {count: 7, val: 1},
+            'U': {count: 3, val: 1}, 'V': {count: 1, val: 4}, 'W': {count: 2, val: 4}, 'X': {count: 1, val: 8},
+            'Y': {count: 2, val: 4}, 'Z': {count: 1, val: 10}
+        }
+    },
+    dropcap: {
+        id: 'dropcap',
+        name: 'Decorative Drop Cap',
+        desc: 'Fewer tiles but each packs a punch. High-value letters are abundant. Hand size: 5.',
+        handSize: 5,
+        distribution: {
+            'A': {count: 4, val: 1}, 'B': {count: 3, val: 3}, 'C': {count: 3, val: 3}, 'D': {count: 3, val: 2},
+            'E': {count: 4, val: 1}, 'F': {count: 3, val: 4}, 'G': {count: 3, val: 2}, 'H': {count: 3, val: 4},
+            'I': {count: 4, val: 1}, 'J': {count: 3, val: 8}, 'K': {count: 2, val: 5}, 'L': {count: 3, val: 1},
+            'M': {count: 2, val: 3}, 'N': {count: 4, val: 1}, 'O': {count: 4, val: 1}, 'P': {count: 3, val: 3},
+            'Q': {count: 2, val: 10}, 'R': {count: 3, val: 1}, 'S': {count: 3, val: 1}, 'T': {count: 4, val: 1},
+            'U': {count: 3, val: 1}, 'V': {count: 2, val: 4}, 'W': {count: 2, val: 4}, 'X': {count: 2, val: 8},
+            'Y': {count: 2, val: 4}, 'Z': {count: 2, val: 10}
+        }
+    },
+    italic: {
+        id: 'italic',
+        name: 'Italic Script',
+        desc: 'Fluid and flexible. More common letters for easier word building. Hand size: 8.',
+        handSize: 8,
+        distribution: {
+            'A': {count: 11, val: 1}, 'B': {count: 2, val: 3}, 'C': {count: 2, val: 3}, 'D': {count: 5, val: 2},
+            'E': {count: 14, val: 1}, 'F': {count: 2, val: 4}, 'G': {count: 3, val: 2}, 'H': {count: 2, val: 4},
+            'I': {count: 11, val: 1}, 'J': {count: 1, val: 8}, 'K': {count: 1, val: 5}, 'L': {count: 5, val: 1},
+            'M': {count: 2, val: 3}, 'N': {count: 7, val: 1}, 'O': {count: 10, val: 1}, 'P': {count: 2, val: 3},
+            'Q': {count: 1, val: 10}, 'R': {count: 7, val: 1}, 'S': {count: 5, val: 1}, 'T': {count: 7, val: 1},
+            'U': {count: 5, val: 1}, 'V': {count: 1, val: 4}, 'W': {count: 1, val: 4}, 'X': {count: 1, val: 8},
+            'Y': {count: 2, val: 4}, 'Z': {count: 1, val: 10}
+        }
     }
 };
 

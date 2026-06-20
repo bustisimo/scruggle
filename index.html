@@ -19,6 +19,7 @@
                 <button id="new-run-trigger-btn" class="menu-btn new-btn">New Run</button>
                 <div style="display: flex; gap: 10px;">
                     <button id="open-stats-btn" class="menu-btn" style="background-color: #7b1fa2; flex: 1;">Stats</button>
+                    <button id="open-ach-btn" class="menu-btn" style="background-color: #c9a227; flex: 1;">🎖️ Achievements</button>
                     <button id="open-dict-btn" class="menu-btn" style="background-color: #5d4037; flex: 1;">Dictionary</button>
                 </div>
             </div>
@@ -154,6 +155,14 @@
             <span id="stat-total-words" class="stat-val" style="color: #03a9f4;">0</span>
         </div>
     </div>
+</div>
+
+<div id="achievements-drawer" class="drawer">
+    <div class="drawer-header">
+        <h3>Achievements <span id="ach-unlocked-count" style="font-size: 14px; opacity: 0.7;"></span></h3>
+        <button id="close-ach-btn" class="close-drawer-btn">&times;</button>
+    </div>
+    <div id="achievements-list" style="flex: 1; overflow-y: auto;"></div>
 </div>
 
 <div id="dictionary-drawer" class="drawer">

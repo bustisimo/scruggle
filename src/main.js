@@ -9,8 +9,10 @@ import {
     renderBagDrawer, createTileUI
 } from './board.js';
 import { openShop, buyItem } from './shop.js';
+import { loadAchievements, checkAchievements, getUnlockedCount } from './achievements.js';
 
 async function init() {
+    loadAchievements();
     loadDictionary(() => {
         renderUI();
         setupDictionarySearch();
@@ -319,6 +321,10 @@ function checkWinLoss() {
         renderUI();
         document.getElementById('win-message').innerText = `Target reached! Bonus Gold: +${bonus}`;
         document.getElementById('win-modal').style.display = 'flex';
+
+        // Check round-win achievements
+        const stats = getStats();
+        checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords });
     } else if (gameState.handsLeft <= 0) {
         document.getElementById('loss-modal').style.display = 'flex';
     }
@@ -340,6 +346,20 @@ function setupEventListeners() {
     }
     if (closeStatsBtn && statsDrawer) {
         closeStatsBtn.onclick = () => statsDrawer.classList.remove('open');
+    }
+
+    // Achievements Drawer
+    const openAchBtn = document.getElementById('open-ach-btn');
+    const achDrawer = document.getElementById('achievements-drawer');
+    const closeAchBtn = document.getElementById('close-ach-btn');
+    if (openAchBtn && achDrawer) {
+        openAchBtn.onclick = () => {
+            renderAchievementsList();
+            achDrawer.classList.add('open');
+        };
+    }
+    if (closeAchBtn && achDrawer) {
+        closeAchBtn.onclick = () => achDrawer.classList.remove('open');
     }
 
     const toggleDict = () => dictDrawer.classList.toggle('open');
@@ -555,6 +575,10 @@ function setupEventListeners() {
 
         updateStats(gameState.currentRound, turnGold, turnWordsCount);
 
+        // Check achievements after submission
+        const stats = getStats();
+        checkAchievements(gameState, stats, { totalWords: stats.totalWords });
+
         for (let y = 0; y < GRID_SIZE; y++) {
             for (let x = 0; x < GRID_SIZE; x++) {
                 const tile = gameState.board[y][x];
@@ -652,6 +676,70 @@ function setupEventListeners() {
             checkWinLoss();
         };
     }
+}
+
+function renderAchievementsList() {
+    const listEl = document.getElementById('achievements-list');
+    const countEl = document.getElementById('ach-unlocked-count');
+    if (!listEl) return;
+
+    const { achievements, isUnlocked, getUnlockedCount } = requireAchievements();
+    const unlocked = isUnlocked;
+    const totalCount = getUnlockedCount();
+
+    if (countEl) countEl.innerText = `(${totalCount}/${achievements.length})`;
+
+    listEl.innerHTML = '';
+    for (const ach of achievements) {
+        const unlocked = isUnlocked(ach.id);
+        const div = document.createElement('div');
+        div.style.cssText = `
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+            margin-bottom: 6px; border-radius: 6px; background: ${unlocked ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.03)'};
+            border: 1px solid ${unlocked ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.05)'};
+            opacity: ${unlocked ? '1' : '0.5'};
+        `;
+        div.innerHTML = `
+            <span style="font-size: 24px;">${ach.icon}</span>
+            <div>
+                <div style="font-weight: bold; color: ${unlocked ? '#00ff88' : '#aaa'}; font-size: 14px;">${ach.name}</div>
+                <div style="color: #888; font-size: 11px;">${ach.desc}</div>
+            </div>
+            ${unlocked ? '<span style="margin-left: auto; color: #00ff88; font-size: 18px;">✓</span>' : ''}
+        `;
+        listEl.appendChild(div);
+    }
+}
+
+function requireAchievements() {
+    // Dynamic import to avoid circular dependency at module level
+    return {
+        achievements: [
+            { id: 'first_word', name: 'First Word', desc: 'Submit your first word', icon: '📝' },
+            { id: 'golden', name: 'Golden', desc: 'Earn 50 total gold', icon: '🪙' },
+            { id: 'centurion', name: 'Centurion', desc: 'Score 100+ points in a single round', icon: '💯' },
+            { id: 'wordsmith', name: 'Wordsmith', desc: 'Submit 50 total words', icon: '📚' },
+            { id: 'high_roller', name: 'High Roller', desc: 'Hold 200+ gold at once', icon: '💰' },
+            { id: 'bibliophile', name: 'Bibliophile', desc: 'Own 5+ bookmarks', icon: '🔖' },
+            { id: 'ink_master', name: 'Ink Master', desc: 'Apply all 7 ink types in one run', icon: '🎨' },
+            { id: 'speed_run', name: 'Speed Run', desc: 'Win a round in 3 or fewer hands', icon: '⚡' },
+            { id: 'marathon', name: 'Marathon', desc: 'Reach round 5', icon: '🏃' },
+            { id: 'perfectionist', name: 'Perfectionist', desc: 'Win a round with 4 hands remaining', icon: '✨' },
+            { id: 'collector', name: 'Collector', desc: 'Own every sticker type', icon: '🏆' },
+            { id: 'first_win', name: 'First Victory', desc: 'Win your first round', icon: '🎉' },
+        ],
+        isUnlocked: (id) => {
+            try {
+                const saved = JSON.parse(localStorage.getItem('scruggle_achievements') || '[]');
+                return saved.includes(id);
+            } catch { return false; }
+        },
+        getUnlockedCount: () => {
+            try {
+                return JSON.parse(localStorage.getItem('scruggle_achievements') || '[]').length;
+            } catch { return 0; }
+        }
+    };
 }
 
 // Start the game!

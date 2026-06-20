@@ -306,6 +306,7 @@ export const gameState = {
     shopOffers: [],
     rerollCost: 2,
     purchasedLetters: [],
+    goldenTicket: false,
     startCell: { x: 3, y: 3 }
 };
 
@@ -328,7 +329,8 @@ export function saveGame() {
         shopOffers: gameState.shopOffers,
         rerollCost: gameState.rerollCost,
         purchasedLetters: gameState.purchasedLetters,
-        startCell: gameState.startCell
+        startCell: gameState.startCell,
+        goldenTicket: gameState.goldenTicket
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
@@ -356,6 +358,7 @@ export function loadSavedGame() {
         gameState.rerollCost = data.rerollCost !== undefined ? data.rerollCost : 2;
         gameState.purchasedLetters = data.purchasedLetters || [];
         gameState.startCell = data.startCell || { x: 3, y: 3 };
+        gameState.goldenTicket = data.goldenTicket || false;
         return true;
     } catch (e) {
         return false;

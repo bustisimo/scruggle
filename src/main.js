@@ -220,8 +220,17 @@ function initRound(isNewRun) {
     }
 
     gameState.targetScore = gameState.currentRound * 30;
+    if (gameState.goldenTicket) {
+        gameState.targetScore = Math.ceil(gameState.targetScore / 2);
+        gameState.goldenTicket = false;
+    }
     gameState.handsLeft = 4;
     gameState.discardsLeft = 3;
+
+    // Hoarder bookmark: +5 gold per round start
+    if (gameState.inventory.includes('hoarder')) {
+        gameState.gold += 5;
+    }
 
     if (isNewRun) {
         gameState.board = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
@@ -647,6 +656,16 @@ function setupEventListeners() {
 
     document.getElementById('next-round-btn').onclick = () => {
         document.getElementById('win-modal').style.display = 'none';
+        // Show round transition screen
+        const trans = document.getElementById('round-transition');
+        document.getElementById('trans-round').innerText = gameState.currentRound;
+        document.getElementById('trans-gold').innerText = gameState.gold;
+        document.getElementById('trans-items').innerText = gameState.inventory.length;
+        trans.classList.add('show');
+    };
+
+    document.getElementById('trans-continue-btn').onclick = () => {
+        document.getElementById('round-transition').classList.remove('show');
         openShop((itemId) => buyItem(itemId, saveGame, renderUI));
     };
 

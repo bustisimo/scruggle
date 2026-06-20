@@ -204,6 +204,49 @@ export const bookmarksRegistry = {
                 }
             }
         }
+    },
+    'alchemist': {
+        id: 'alchemist',
+        name: 'Alchemist',
+        desc: 'Ink tiles are worth +3 extra gold when scored.',
+        price: 25,
+        hooks: {
+            onWordScored(state, context) {
+                if (context.tileInks && context.tileInks > 0) {
+                    context.wordGold += context.tileInks * 3;
+                }
+            }
+        }
+    },
+    'architect': {
+        id: 'architect',
+        name: 'Architect',
+        desc: 'The center star gives 2x word multiplier instead of DW.',
+        price: 30,
+        hooks: {
+            onCenterStar(state, context) {
+                context.wordMultiplier = (context.wordMultiplier || 1) * 2;
+            }
+        }
+    },
+    'hoarder': {
+        id: 'hoarder',
+        name: 'Hoarder',
+        desc: 'Start each round with +5 gold.',
+        price: 20
+    },
+    'recycler': {
+        id: 'recycler',
+        name: 'Recycler',
+        desc: 'Discarding tiles refunds 1 gold per tile.',
+        price: 20,
+        hooks: {
+            onSwapTiles(state, context) {
+                if (context.discardCount) {
+                    state.gold += context.discardCount;
+                }
+            }
+        }
     }
 };
 
@@ -223,7 +266,14 @@ export const shopItems = [
     { id: 'sticker_qw', name: 'QW Sticker', desc: 'Apply a custom Quadruple Word (x4) multiplier to any board cell.', price: 25 },
     { id: 'sticker_gm', name: 'Gold Sticker', desc: 'Apply a Gold Multiplier (scores normal, but gives Gold equal to tile value).', price: 25 },
     { id: 'sticker_eraser', name: 'Eraser', desc: 'Remove a multiplier from any cell, or clear a locked tile from the board.', price: 10 },
-    { id: 'buy_letter', name: 'Letter Pack', desc: 'Add 3 random letters to your starting bag.', price: 5 }
+    { id: 'buy_letter', name: 'Letter Pack', desc: 'Add 3 random letters to your starting bag.', price: 5 },
+    // New ink packs
+    { id: 'pack_storm', name: 'Storm Ink Pack', desc: 'Apply Storm Ink to 2 tiles. Storm tiles deal +3 bonus score to adjacent words.', price: 20 },
+    { id: 'pack_echo', name: 'Echo Ink Pack', desc: 'Apply Echo Ink to 3 tiles. Echo tiles give +2 score when reused in future submissions.', price: 15 },
+    // Utility items
+    { id: 'hand_expansion', name: 'Hand Expansion', desc: 'Permanently increase your hand size by 1.', price: 30 },
+    { id: 'bag_trimmer', name: 'Bag Trimmer', desc: 'Remove 5 random low-value tiles from your bag.', price: 10 },
+    { id: 'golden_ticket', name: 'Golden Ticket', desc: 'Next round\'s target score is halved.', price: 50 }
 ];
 
 export function triggerHook(hookName, context) {

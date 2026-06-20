@@ -154,6 +154,37 @@ export function buyItem(id, saveCallback, renderCallback) {
         return;
     }
 
+    // Utility items
+    if (id === 'hand_expansion') {
+        gameState.gold -= item.price;
+        gameState.handSize += 1;
+        saveCallback();
+        renderCallback();
+        openShop((itemId) => buyItem(itemId, saveCallback, renderCallback));
+        return;
+    }
+    if (id === 'bag_trimmer') {
+        gameState.gold -= item.price;
+        // Remove 5 lowest-value tiles from bag
+        const sorted = [...gameState.bag].sort((a, b) => a.value - b.value);
+        const removed = sorted.slice(0, Math.min(5, sorted.length));
+        gameState.bag = gameState.bag.filter(t => !removed.includes(t));
+        const removedNames = removed.map(t => t.letter).join(', ');
+        alert(`Removed 5 low-value tiles from your bag: ${removedNames}`);
+        saveCallback();
+        renderCallback();
+        openShop((itemId) => buyItem(itemId, saveCallback, renderCallback));
+        return;
+    }
+    if (id === 'golden_ticket') {
+        gameState.gold -= item.price;
+        gameState.goldenTicket = true;
+        saveCallback();
+        renderCallback();
+        openShop((itemId) => buyItem(itemId, saveCallback, renderCallback));
+        return;
+    }
+
     if (!gameState.inventory.includes(id)) {
         gameState.gold -= item.price;
         gameState.inventory.push(id);

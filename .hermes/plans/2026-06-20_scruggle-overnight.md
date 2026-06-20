@@ -18,7 +18,7 @@ Check off tasks by changing `- [ ]` to `- [x]` after committing.
 
 ### Phase 1: Full-Screen Shop Redesign
 
-- [ ] **Task 1.1: Replace shop modal markup with full-screen page**
+- [x] **Task 1.1: Replace shop modal markup with full-screen page**
   - **Files:** `index.html:80-86`
   - Replace `#shop-modal` with `#shop-screen` (a full-page overlay with its own layout)
   - Add gold counter at top, item grid in center, "Start Next Round" button at bottom

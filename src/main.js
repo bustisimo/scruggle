@@ -2,7 +2,7 @@ import {
     gameState, GRID_SIZE, letterDist, shopItems, CLASSIC_MULTIPLIERS,
     saveGame, loadSavedGame, deleteSavedGame, FONT_BAGS, triggerHook, shuffle, getSwapCost
 } from './state.js';
-import { getStats, updateStats } from './stats.js';
+import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, getTitleEmoji } from './stats.js';
 import { loadDictionary, validateBoard, findWords } from './rules.js';
 import {
     renderInventory, renderBoard, renderHand, handleBoardClick,
@@ -88,6 +88,9 @@ function showStartScreen() {
     document.getElementById('stat-highest-round').innerText = stats.maxRound;
     document.getElementById('stat-total-gold').innerText = stats.totalGold;
     document.getElementById('stat-total-words').innerText = stats.totalWords;
+    document.getElementById('stat-total-runs').innerText = stats.totalRuns || 0;
+    document.getElementById('stat-total-wins').innerText = stats.totalWins || 0;
+    document.getElementById('stat-title').innerText = `${getTitleEmoji()} ${getPlayerTitle()}`;
 
     const hasSave = loadSavedGame();
     const continueBtn = document.getElementById('continue-run-btn');
@@ -331,6 +334,8 @@ function checkWinLoss() {
         document.getElementById('win-message').innerText = `Target reached! Bonus Gold: +${bonus}`;
         document.getElementById('win-modal').style.display = 'flex';
 
+        incrementWins();
+
         // Check round-win achievements
         const stats = getStats();
         checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords });
@@ -431,6 +436,7 @@ function setupEventListeners() {
     };
 
     const startNewRun = () => {
+        incrementRuns();
         initRound(true);
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('game-container').style.display = 'flex';

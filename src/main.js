@@ -531,11 +531,13 @@ function setupEventListeners() {
         const savedTheme = localStorage.getItem('scruggle_theme');
         if (savedTheme === 'light') {
             document.body.classList.add('theme-light');
-            themeBtn.innerText = '🌞 Light';
+            themeBtn.classList.add('theme-light-btn');
+            themeBtn.innerText = 'Light';
         }
         themeBtn.onclick = () => {
             const isLight = document.body.classList.toggle('theme-light');
-            themeBtn.innerText = isLight ? '🌞 Light' : '🌓 Theme';
+            themeBtn.classList.toggle('theme-light-btn', isLight);
+            themeBtn.innerText = isLight ? 'Light' : 'Dark';
             localStorage.setItem('scruggle_theme', isLight ? 'light' : 'dark');
         };
     }
@@ -1401,35 +1403,33 @@ function spawnConfetti() {
     const container = document.getElementById('win-confetti-container');
     if (!container) return;
     container.innerHTML = '';
-    const colors = ['#e91e63', '#ff5722', '#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#ff9800', '#00bcd4'];
-    const shapes = ['square', 'circle'];
-    for (let i = 0; i < 40; i++) {
+    const count = 50;
+    for (let i = 0; i < count; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const size = 6 + Math.floor(Math.random() * 8);
-        const left = Math.random() * 100;
-        const duration = 1.2 + Math.random() * 1.5;
-        const delay = Math.random() * 0.8;
+        const hue = Math.floor(Math.random() * 360);
+        const size = 6 + Math.floor(Math.random() * 10);
+        const x = Math.random() * 100;
+        const y = 60 + Math.random() * 120;
+        const drift = (Math.random() - 0.5) * 100;
+        const dur = 1.2 + Math.random() * 1.8;
+        const del = Math.random() * 1.2;
         const spin = 180 + Math.floor(Math.random() * 720);
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
         piece.style.cssText = `
-            left: ${left}%;
-            width: ${size}px;
-            height: ${size}px;
-            background: ${color};
-            --duration: ${duration}s;
-            animation-delay: ${delay}s;
+            --x: ${x}%;
+            --y: ${y}px;
+            --hue: ${hue};
+            --size: ${size}px;
+            --drift: ${drift}px;
+            --dur: ${dur}s;
+            --del: ${del}s;
             --spin: ${spin}deg;
-            border-radius: ${shape === 'circle' ? '50%' : '2px'};
-            box-shadow: 0 0 4px rgba(255,255,255,0.3);
         `;
         container.appendChild(piece);
     }
-    // Clean up after animations complete
     setTimeout(() => {
         if (container) container.innerHTML = '';
-    }, 4000);
+    }, 5000);
 }
 
 // Start the game!

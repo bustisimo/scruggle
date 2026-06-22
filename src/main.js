@@ -87,6 +87,44 @@ function renderTitleTiles() {
     });
 }
 
+function renderFontBagCards(hasSave) {
+    const optionsContainer = document.getElementById('font-bag-options');
+    if (!optionsContainer) return;
+    optionsContainer.innerHTML = '';
+    Object.values(FONT_BAGS).forEach(bag => {
+        const card = document.createElement('div');
+        card.className = 'font-bag-card';
+        if (gameState.selectedFontBagId === bag.id) {
+            card.classList.add('active');
+        }
+        if (hasSave) {
+            card.style.opacity = '0.7';
+            card.style.cursor = 'not-allowed';
+            card.title = 'Cannot change starting bag during an active run!';
+        }
+        card.innerHTML = `
+            <div class="font-bag-name">${bag.name}</div>
+            <div class="font-bag-desc">${bag.desc}</div>
+            <div class="font-bag-stats">
+                <span class="bag-stat">🃏 ${bag.handSize} hand</span>
+                <span class="bag-stat">📦 ${Object.values(bag.distribution).reduce((s, d) => s + d.count, 0)} tiles</span>
+                <span class="bag-stat">⭐ ${(Object.values(bag.distribution).reduce((s, d) => s + d.val * d.count, 0) / Object.values(bag.distribution).reduce((s, d) => s + d.count, 0)).toFixed(1)} avg</span>
+                <span class="bag-stat">🔤 ${Object.entries(bag.distribution).filter(([l]) => 'AEIOU'.includes(l)).reduce((s, [,d]) => s + d.count, 0)} vowels</span>
+            </div>
+        `;
+        if (!hasSave) {
+            card.onclick = () => {
+                gameState.selectedFontBagId = bag.id;
+                gameState.handSize = bag.handSize;
+                saveGame();
+                Array.from(optionsContainer.children).forEach(child => child.classList.remove('active'));
+                card.classList.add('active');
+            };
+        }
+        optionsContainer.appendChild(card);
+    });
+}
+
 function showStartScreen() {
     const stats = getStats();
     document.getElementById('stat-highest-round').innerText = stats.maxRound;
@@ -104,42 +142,7 @@ function showStartScreen() {
         continueBtn.disabled = true;
     }
 
-    const optionsContainer = document.getElementById('font-bag-options');
-    if (optionsContainer) {
-        optionsContainer.innerHTML = '';
-        Object.values(FONT_BAGS).forEach(bag => {
-            const card = document.createElement('div');
-            card.className = 'font-bag-card';
-            if (gameState.selectedFontBagId === bag.id) {
-                card.classList.add('active');
-            }
-            if (hasSave) {
-                card.style.opacity = '0.7';
-                card.style.cursor = 'not-allowed';
-                card.title = 'Cannot change starting bag during an active run!';
-            }
-            card.innerHTML = `
-                <div class="font-bag-name">${bag.name}</div>
-                <div class="font-bag-desc">${bag.desc}</div>
-                <div class="font-bag-stats">
-                    <span class="bag-stat">🃏 ${bag.handSize} hand</span>
-                    <span class="bag-stat">📦 ${Object.values(bag.distribution).reduce((s, d) => s + d.count, 0)} tiles</span>
-                    <span class="bag-stat">⭐ ${(Object.values(bag.distribution).reduce((s, d) => s + d.val * d.count, 0) / Object.values(bag.distribution).reduce((s, d) => s + d.count, 0)).toFixed(1)} avg</span>
-                    <span class="bag-stat">🔤 ${Object.entries(bag.distribution).filter(([l]) => 'AEIOU'.includes(l)).reduce((s, [,d]) => s + d.count, 0)} vowels</span>
-                </div>
-            `;
-            if (!hasSave) {
-                card.onclick = () => {
-                    gameState.selectedFontBagId = bag.id;
-                    gameState.handSize = bag.handSize;
-                    saveGame();
-                    Array.from(optionsContainer.children).forEach(child => child.classList.remove('active'));
-                    card.classList.add('active');
-                };
-            }
-            optionsContainer.appendChild(card);
-        });
-    }
+    renderFontBagCards(hasSave);
 
     // Ensure main menu is visible, bag selection is hidden
     document.getElementById('main-menu-view').style.display = 'block';
@@ -812,6 +815,7 @@ function setupEventListeners() {
             }
             menuView.style.display = 'none';
             bagView.style.display = 'block';
+            renderFontBagCards(hasSave);
         };
     }
 

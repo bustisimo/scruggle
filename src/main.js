@@ -170,14 +170,17 @@ function setupDictionarySearch() {
             for (const word of gameState.dictionary) {
                 if (word.startsWith(query)) {
                     matches.push(word);
-                    if (matches.length >= 100) break;
+                    if (matches.length >= 200) break;
                 }
             }
 
             if (matches.length === 0) {
                 results.innerHTML = '<p style="opacity: 0.7;">No matches found.</p>';
             } else {
-                results.innerHTML = matches.map(w => `<div>${w}</div>`).join('');
+                const countText = matches.length >= 200
+                    ? `<div style="font-size: 12px; color: #aaa; padding: 4px 12px 8px; border-bottom: 1px solid rgba(253, 250, 242, 0.08);">Showing first 200 of 200+ matches</div>`
+                    : `<div style="font-size: 12px; color: #aaa; padding: 4px 12px 8px; border-bottom: 1px solid rgba(253, 250, 242, 0.08);">${matches.length} match${matches.length === 1 ? '' : 'es'}</div>`;
+                results.innerHTML = countText + matches.map(w => `<div>${w}</div>`).join('');
             }
         }, 150);
     };
@@ -477,11 +480,48 @@ function setupEventListeners() {
     const dictDrawer = document.getElementById('dictionary-drawer');
     const closeDictBtn = document.getElementById('close-dict-btn');
 
+    // Drawer backdrop helper
+    const backdrop = document.getElementById('drawer-backdrop');
+    let openDrawers = new Set();
+    function updateDrawerBackdrop() {
+        if (!backdrop) return;
+        if (openDrawers.size > 0) {
+            backdrop.classList.add('show');
+        } else {
+            backdrop.classList.remove('show');
+        }
+    }
+    function openDrawer(el) {
+        el.classList.add('open');
+        openDrawers.add(el);
+        updateDrawerBackdrop();
+    }
+    function closeDrawer(el) {
+        el.classList.remove('open');
+        openDrawers.delete(el);
+        updateDrawerBackdrop();
+    }
+    function toggleDrawer(el) {
+        if (el.classList.contains('open')) {
+            closeDrawer(el);
+        } else {
+            openDrawer(el);
+        }
+    }
+    // Close any open drawer when backdrop is clicked
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            openDrawers.forEach(d => d.classList.remove('open'));
+            openDrawers.clear();
+            updateDrawerBackdrop();
+        });
+    }
+
     if (openStatsBtn && statsDrawer) {
-        openStatsBtn.onclick = () => statsDrawer.classList.add('open');
+        openStatsBtn.onclick = () => openDrawer(statsDrawer);
     }
     if (closeStatsBtn && statsDrawer) {
-        closeStatsBtn.onclick = () => statsDrawer.classList.remove('open');
+        closeStatsBtn.onclick = () => closeDrawer(statsDrawer);
     }
 
     // Achievements Drawer
@@ -491,17 +531,17 @@ function setupEventListeners() {
     if (openAchBtn && achDrawer) {
         openAchBtn.onclick = () => {
             renderAchievementsList();
-            achDrawer.classList.add('open');
+            openDrawer(achDrawer);
         };
     }
     if (closeAchBtn && achDrawer) {
-        closeAchBtn.onclick = () => achDrawer.classList.remove('open');
+        closeAchBtn.onclick = () => closeDrawer(achDrawer);
     }
 
-    const toggleDict = () => dictDrawer.classList.toggle('open');
+    const toggleDict = () => toggleDrawer(dictDrawer);
     if (openDictBtn) openDictBtn.onclick = toggleDict;
     if (openDictGameBtn) openDictGameBtn.onclick = toggleDict;
-    if (closeDictBtn) closeDictBtn.onclick = () => dictDrawer.classList.remove('open');
+    if (closeDictBtn) closeDictBtn.onclick = () => closeDrawer(dictDrawer);
 
     // New Run Flow
     const newRunTriggerBtn = document.getElementById('new-run-trigger-btn');
@@ -533,7 +573,7 @@ function setupEventListeners() {
 
     if (bagBtn && bagDrawer) {
         bagBtn.onclick = () => {
-            bagDrawer.classList.toggle('open');
+            toggleDrawer(bagDrawer);
             if (bagDrawer.classList.contains('open')) {
                 renderBagDrawer();
             }
@@ -542,7 +582,7 @@ function setupEventListeners() {
 
     if (closeBagBtn && bagDrawer) {
         closeBagBtn.onclick = () => {
-            bagDrawer.classList.remove('open');
+            closeDrawer(bagDrawer);
         };
     }
 
@@ -965,10 +1005,14 @@ function setupEventListeners() {
                 });
             }
             invDrawer.classList.add('open');
+            openDrawers.add(invDrawer);
+            updateDrawerBackdrop();
         }
     };
     document.getElementById('close-inv-btn').onclick = () => {
-        if (invDrawer) invDrawer.classList.remove('open');
+        if (invDrawer) {
+            closeDrawer(invDrawer);
+        }
     };
 
     // Mute toggle

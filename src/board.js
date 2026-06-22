@@ -81,6 +81,24 @@ export function renderBoard(onCellClick, renderCallback) {
                 }
                 cell.appendChild(tileEl);
             } else {
+                // Hover highlight for valid placement area
+                cell.addEventListener('mouseenter', () => {
+                    // Determine valid adjacent cells for this empty cell
+                    const adjCells = getValidAdjacentCells(x, y);
+                    adjCells.forEach(([ax, ay]) => {
+                        const idx = ay * GRID_SIZE + ax;
+                        const adjCell = boardEl.children[idx];
+                        if (adjCell && !adjCell.querySelector('.tile')) {
+                            adjCell.classList.add('valid-placement');
+                        }
+                    });
+                });
+                cell.addEventListener('mouseleave', () => {
+                    boardEl.querySelectorAll('.cell.valid-placement').forEach(el => {
+                        el.classList.remove('valid-placement');
+                    });
+                });
+
                 // Board Drag and Drop targets for empty cells
                 cell.addEventListener('dragover', (e) => {
                     if (gameState.draggingHandIndex !== undefined) {
@@ -111,6 +129,54 @@ export function renderBoard(onCellClick, renderCallback) {
     document.getElementById('submit-btn').disabled = !validation.allValid || !gameState.dictionaryLoaded || gameState.handsLeft <= 0;
     const swapCost = getSwapCost();
     // Update inventory rendering logic to show gold changes
+}
+
+/**
+ * Compute which empty cells are valid placement targets adjacent to the hovered cell.
+ * Shows cells along the same row or column as existing tiles near the cursor.
+ */
+function getValidAdjacentCells(x, y) {
+    const results = [];
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+    for (const [dx, dy] of dirs) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+            const tile = gameState.board[ny][nx];
+            // Highlight empty cells that are adjacent to existing tiles
+            if (tile) {
+                results.push([nx, ny]);
+            } else {
+                // Check if this direction has any tile further along the line
+                let found = false;
+                for (let step = 2; step < GRID_SIZE; step++) {
+                    const sx = x + dx * step;
+                    const sy = y + dy * step;
+                    if (sx < 0 || sx >= GRID_SIZE || sy < 0 || sy >= GRID_SIZE) break;
+                    if (gameState.board[sy][sx]) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    results.push([nx, ny]);
+                }
+            }
+        }
+    }
+
+    // If no tiles exist yet, just highlight the center cell
+    const hasAnyTiles = gameState.board.some(row => row.some(cell => cell !== null));
+    if (!hasAnyTiles) {
+        const startX = gameState.startCell ? gameState.startCell.x : 3;
+        const startY = gameState.startCell ? gameState.startCell.y : 3;
+        if (Math.abs(x - startX) + Math.abs(y - startY) === 1) {
+            results.push([startX, startY]);
+        }
+    }
+
+    return results;
 }
 
 export function renderHand(onTileClick, renderCallback) {

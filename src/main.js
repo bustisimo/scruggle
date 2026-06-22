@@ -268,7 +268,7 @@ function initRound(isNewRun) {
         gameState.goldenTicket = false;
     }
     gameState.handsLeft = 4;
-    gameState.discardsLeft = 3;
+    gameState.discardsLeft = 15;
     gameState.discardPool = [];
 
     // Hoarder bookmark: +5 gold per round start
@@ -1251,10 +1251,10 @@ function setupEventListeners() {
     document.getElementById('swap-btn').onclick = () => {
         if (gameState.selectedHandIndices.size === 0) return;
 
-        const swapCost = getSwapCost();
-        if (gameState.discardsLeft < swapCost) return;
+        const discardCost = gameState.selectedHandIndices.size;
+        if (gameState.discardsLeft < discardCost) return;
 
-        gameState.discardsLeft -= swapCost;
+        gameState.discardsLeft -= discardCost;
 
         const indices = Array.from(gameState.selectedHandIndices).sort((a, b) => b - a);
         const discardedTiles = [];

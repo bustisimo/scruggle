@@ -942,8 +942,9 @@ function setupEventListeners() {
         drawTiles();
 
         // Boss mechanic: The Mirror — place mirrored tiles at opposite positions
+        let mirrorResult = null;
         if (gameState.activeBoss === 'the_mirror') {
-            const mirrorResult = BOSSES.the_mirror.onSubmission(gameState);
+            mirrorResult = BOSSES.the_mirror.onSubmission(gameState);
             if (mirrorResult.mirroredPairs && mirrorResult.mirroredPairs.length > 0) {
                 for (const pair of mirrorResult.mirroredPairs) {
                     const sourceTile = gameState.board[pair.from.y][pair.from.x];
@@ -974,10 +975,9 @@ function setupEventListeners() {
             bossMessage = '🕳️ The Void consumed this submission\'s tiles!';
         }
 
-        // Boss mechanic: The Mirror reflection message
-        if (gameState.activeBoss === 'the_mirror') {
-            const mirrorResult = BOSSES.the_mirror.onSubmission(gameState);
-            if (mirrorResult.message) bossMessage = mirrorResult.message;
+        // Boss mechanic: The Mirror reflection message (reuse result from above)
+        if (gameState.activeBoss === 'the_mirror' && mirrorResult && mirrorResult.message) {
+            bossMessage = mirrorResult.message;
         }
 
         // Show the scoring animation

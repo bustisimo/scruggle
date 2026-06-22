@@ -15,7 +15,23 @@ import { BOSSES, getBossForRound, applyBossReward } from './bosses.js';
 import { showScoringAnimation, closeScoringAnimation } from './scoring_animation.js';
 import audio from './audio.js';
 
+function fitBoard() {
+    const root = document.documentElement;
+    const pad = 40; // side padding
+    const vertOverhead = 200; // scoreboard + stats + hand + controls + gaps
+
+    const maxCellW = Math.floor((window.innerWidth - pad) / 7);
+    const maxCellH = Math.floor((window.innerHeight - vertOverhead) / 7);
+    let cell = Math.min(maxCellW, maxCellH, 60); // cap at desktop default
+    cell = Math.max(cell, 28); // never smaller than usable
+
+    root.style.setProperty('--cell-size', cell + 'px');
+    root.style.setProperty('--tile-size', Math.floor(cell * 0.84) + 'px');
+}
+
 async function init() {
+    fitBoard();
+    window.addEventListener('resize', () => { fitBoard(); });
     loadAchievements();
     loadDictionary(() => {
         renderUI();

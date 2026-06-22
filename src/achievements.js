@@ -67,6 +67,31 @@ export const achievements = [
         }},
     { id: 'decade', name: 'Decade of Wins', desc: 'Win 10 rounds total', icon: '🏅',
         check(state, stats, context) { return stats.totalWins >= 10; }},
+    // ── New achievements ──────────────────────────────────────────────────
+    { id: 'sapphire', name: 'Sapphire', desc: 'Earn 5,000 total gold', icon: '🔷',
+        check(state, stats, context) { return stats.totalGold >= 5000; }},
+    { id: 'millionaire', name: 'Millionaire', desc: 'Earn 10,000 total gold', icon: '💎',
+        check(state, stats, context) { return stats.totalGold >= 10000; }},
+    { id: 'diamond', name: 'Diamond Hands', desc: 'Hold 500+ gold at once', icon: '💠',
+        check(state, stats, context) { return state.gold >= 500; }},
+    { id: 'tycoon', name: 'Tycoon', desc: 'Hold 1,000+ gold at once', icon: '🏦',
+        check(state, stats, context) { return state.gold >= 1000; }},
+    { id: 'godspeed', name: 'Godspeed', desc: 'Submit 2,000 total words', icon: '🚀',
+        check(state, stats, context) { return stats.totalWords >= 2000; }},
+    { id: 'legend', name: 'Legend', desc: 'Submit 5,000 total words', icon: '📜',
+        check(state, stats, context) { return stats.totalWords >= 5000; }},
+    { id: 'unstoppable', name: 'Unstoppable', desc: 'Win 50 rounds total', icon: '🔥',
+        check(state, stats, context) { return stats.totalWins >= 50; }},
+    { id: 'backbone', name: 'Backbone', desc: 'Reach round 30', icon: '🦴',
+        check(state, stats, context) { return state.currentRound >= 30; }},
+    { id: 'endless', name: 'Endless', desc: 'Reach round 50', icon: '♾️',
+        check(state, stats, context) { return state.currentRound >= 50; }},
+    { id: 'veteran', name: 'Veteran', desc: 'Reach round 100', icon: '🎖️',
+        check(state, stats, context) { return state.currentRound >= 100; }},
+    { id: 'supernova', name: 'Supernova', desc: 'Score 500+ in a single turn', icon: '💫',
+        check(state, stats, context) { return context.turnScore >= 500; }},
+    { id: 'clutch', name: 'Clutch', desc: 'Win on the very last hand', icon: '🎯',
+        check(state, stats, context) { return context.roundWon && state.handsLeft === 0; }},
 ];
 
 let unlockedAchievements = [];
@@ -187,6 +212,18 @@ export function getAchievementProgress(achId) {
         case 'ascetic': return 'Win without buying anything';
         case 'ink_collector': return `${(stats.inksUsed || []).length}/9 inks`;
         case 'decade': return `${stats.totalWins || 0}/10 wins`;
+        case 'sapphire': return `${stats.totalGold || 0}/5000 gold`;
+        case 'millionaire': return `${stats.totalGold || 0}/10000 gold`;
+        case 'diamond': return 'Hold 500+ gold in one run';
+        case 'tycoon': return 'Hold 1000+ gold in one run';
+        case 'godspeed': return `${stats.totalWords || 0}/2000 words`;
+        case 'legend': return `${stats.totalWords || 0}/5000 words`;
+        case 'unstoppable': return `${stats.totalWins || 0}/50 wins`;
+        case 'backbone': return `${stats.maxRound || 1}/30 rounds`;
+        case 'endless': return `${stats.maxRound || 1}/50 rounds`;
+        case 'veteran': return `${stats.maxRound || 1}/100 rounds`;
+        case 'supernova': return 'Score 500+ in a single turn';
+        case 'clutch': return 'Win on the very last hand';
         default: return '';
     }
 }

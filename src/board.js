@@ -1,4 +1,4 @@
-import { gameState, GRID_SIZE, shopItems, shuffle, saveGame, getSwapCost } from './state.js';
+import { gameState, GRID_SIZE, shopItems, shuffle } from './state.js';
 import { validateBoard } from './rules.js';
 
 export function renderInventory() {
@@ -382,31 +382,6 @@ export function handleBoardClick(x, y, saveCallback, renderCallback) {
         saveCallback();
         renderCallback();
     }
-
-    // Handle Swap Discard Logic
-    document.getElementById('swap-btn').addEventListener('click', () => {
-        const selected = Array.from(gameState.selectedHandIndices);
-        if (selected.length === 0) return;
-
-        const cost = getSwapCost();
-        if (cost > gameState.discardsLeft) return;
-
-        // Move selected tiles from hand to Bag
-        const discardedTiles = selected.map(i => gameState.hand.splice(i, 1)[0]);
-        gameState.bag.push(...discardedTiles);
-        shuffle(gameState.bag);
-
-        // Replace with new tiles from Bag
-        while (gameState.hand.length < gameState.handSize && gameState.bag.length > 0) {
-            gameState.hand.push(gameState.bag.pop());
-        }
-
-        gameState.selectedHandIndices.clear();
-        gameState.discardsLeft = Math.max(0, gameState.discardsLeft - cost);
-        saveGame();
-        renderHand(renderHand, renderBoard);
-        renderBagDrawer();
-    });
 }
 
 export function renderBagDrawer() {

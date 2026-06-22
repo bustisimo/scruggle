@@ -67,7 +67,12 @@
             <button id="keyboard-shortcuts-btn" class="stats-badge" style="background-color: #4a6e52;" title="Keyboard Shortcuts">⌨</button>
         </div>
     </div>
-    <div id="bag-info">Tiles Left: <span id="bag-count">0</span></div>
+    <div id="bag-info">
+        <span class="bag-label">Tiles Left: <span id="bag-count">0</span></span>
+        <div class="bag-progress-container" id="bag-progress-container">
+            <div class="bag-progress-fill" id="bag-progress-fill"></div>
+        </div>
+    </div>
 
     <div id="sticker-banner" style="display: none;"></div>
 
@@ -76,6 +81,7 @@
     <div id="hand-container">
         <div id="hand"></div>
         <button id="shuffle-hand-btn" title="Shuffle Hand">🔀</button>
+        <button id="sort-hand-btn" class="sort-hand-btn" title="Sort Hand Alphabetically">🔤</button>
     </div>
 
     <div id="controls">

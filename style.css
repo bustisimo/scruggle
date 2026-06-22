@@ -270,6 +270,88 @@ body {
     box-shadow: 0 0px 0 #3e2723, inset 0 2px 5px rgba(255,255,255,0.2);
 }
 
+/* Sort Hand Button */
+.sort-hand-btn {
+    font-size: 22px;
+    background: radial-gradient(circle, #5d7a5f 0%, #2e4a32 100%);
+    border: 3px double #a5d6a7;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #1b3a1e, inset 0 2px 5px rgba(255,255,255,0.2);
+    transition: transform 0.1s, box-shadow 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    padding: 0;
+}
+.sort-hand-btn:hover {
+    background: radial-gradient(circle, #6f8f71 0%, #3d5e41 100%);
+}
+.sort-hand-btn:active {
+    transform: translateY(6px);
+    box-shadow: 0 0px 0 #1b3a1e, inset 0 2px 5px rgba(255,255,255,0.2);
+}
+
+/* Hand tile bag-remaining indicator badge */
+.hand-bag-remaining {
+    position: absolute;
+    bottom: 1px;
+    left: 2px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #8db88f;
+    background: rgba(0,0,0,0.35);
+    padding: 1px 4px;
+    border-radius: 3px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Bag info & progress bar */
+#bag-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 14px;
+    background-color: rgba(20, 38, 32, 0.6);
+    border: 1px solid rgba(253, 250, 242, 0.12);
+    border-radius: 8px;
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    color: var(--parchment);
+}
+.bag-label {
+    white-space: nowrap;
+}
+.bag-progress-container {
+    flex: 1;
+    min-width: 100px;
+    max-width: 180px;
+    height: 8px;
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.bag-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+.bag-progress-fill.bag-progress-green {
+    background: linear-gradient(90deg, #388e3c, #4caf50);
+}
+.bag-progress-fill.bag-progress-yellow {
+    background: linear-gradient(90deg, #f9a825, #fdd835);
+}
+.bag-progress-fill.bag-progress-red {
+    background: linear-gradient(90deg, #c62828, #ef5350);
+}
+
 /* Drag and Drop Visual States */
 .tile.dragging, .title-tile.dragging {
     opacity: 0.5;

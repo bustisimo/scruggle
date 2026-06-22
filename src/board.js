@@ -179,12 +179,36 @@ function getValidAdjacentCells(x, y) {
     return results;
 }
 
+/** Compute how many of each letter remain in the bag */
+export function computeBagLetterCounts() {
+    const counts = {};
+    for (const tile of gameState.bag) {
+        counts[tile.letter] = (counts[tile.letter] || 0) + 1;
+    }
+    return counts;
+}
+
+/** Build a distribution string for tooltips */
+export function buildBagDistributionText(counts) {
+    const sorted = Object.keys(counts).sort();
+    const parts = sorted.map(l => `${l}: ${counts[l]}`);
+    return parts.join(' | ');
+}
+
 export function renderHand(onTileClick, renderCallback) {
     const handEl = document.getElementById('hand');
     handEl.innerHTML = '';
+    const bagCounts = computeBagLetterCounts();
     gameState.hand.forEach((tile, index) => {
         const tileEl = createTileUI(tile);
         tileEl._tile = tile; // Attach tile object to DOM element
+        // Add remaining-count indicator badge
+        const remaining = bagCounts[tile.letter] || 0;
+        const remBadge = document.createElement('span');
+        remBadge.className = 'hand-bag-remaining';
+        remBadge.innerText = remaining;
+        remBadge.title = `${remaining} of ${tile.letter} remaining in bag`;
+        tileEl.appendChild(remBadge);
         if (gameState.selectedHandIndices.has(index)) tileEl.classList.add('selected');
 
         // HTML5 Drag and Drop for hand sorting

@@ -7,7 +7,7 @@ import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, ge
 import { loadDictionary, validateBoard, findWords } from './rules.js';
 import {
     renderInventory, renderBoard, renderHand, handleBoardClick,
-    renderBagDrawer, createTileUI
+    renderBagDrawer, createTileUI, computeBagLetterCounts, buildBagDistributionText
 } from './board.js';
 import { openShop, buyItem } from './shop.js';
 import { loadAchievements, checkAchievements, getUnlockedCount } from './achievements.js';
@@ -415,6 +415,28 @@ function renderUI() {
     renderInventory();
     renderBoard(onCellClick, renderUI);
     renderHand(onTileClick, renderUI);
+
+    // Bag progress bar — compute against the font bag's total starting count
+    const activeBag = FONT_BAGS[gameState.selectedFontBagId || 'standard'] || FONT_BAGS.standard;
+    const totalTiles = Object.values(activeBag.distribution).reduce((s, d) => s + d.count, 0);
+    const currentCount = gameState.bag.length;
+    const pctRemaining = totalTiles > 0 ? (currentCount / totalTiles) * 100 : 0;
+
+    const bagProgressFill = document.getElementById('bag-progress-fill');
+    if (bagProgressFill) {
+        bagProgressFill.style.width = pctRemaining + '%';
+        // Color coding
+        const colorClass = pctRemaining > 50 ? 'bag-progress-green' : (pctRemaining > 25 ? 'bag-progress-yellow' : 'bag-progress-red');
+        bagProgressFill.className = 'bag-progress-fill ' + colorClass;
+    }
+
+    // Bag tooltip with exact distribution
+    const bagCountEl = document.getElementById('bag-count');
+    if (bagCountEl) {
+        const counts = computeBagLetterCounts();
+        const tooltip = buildBagDistributionText(counts);
+        bagCountEl.title = tooltip || 'Bag is empty';
+    }
 
     const drawer = document.getElementById('bag-drawer');
     if (drawer && drawer.classList.contains('open')) {
@@ -939,6 +961,16 @@ function setupEventListeners() {
     if (shuffleHandBtn) {
         shuffleHandBtn.onclick = () => {
             shuffle(gameState.hand);
+            gameState.selectedHandIndices.clear();
+            saveGame();
+            renderUI();
+        };
+    }
+
+    const sortHandBtn = document.getElementById('sort-hand-btn');
+    if (sortHandBtn) {
+        sortHandBtn.onclick = () => {
+            gameState.hand.sort((a, b) => a.letter.localeCompare(b.letter));
             gameState.selectedHandIndices.clear();
             saveGame();
             renderUI();

@@ -64,6 +64,7 @@
             <button id="view-bag-btn" class="stats-badge">Bag (<span id="bag-count-badge">0</span>)</button>
             <button id="view-dict-game-btn" class="stats-badge" style="background-color: #5d4037;">Dict</button>
             <button id="mute-btn" class="stats-badge" style="background-color: #555;" title="Toggle Sound">🔊</button>
+            <button id="keyboard-shortcuts-btn" class="stats-badge" style="background-color: #4a6e52;" title="Keyboard Shortcuts">⌨</button>
         </div>
     </div>
     <div id="bag-info">Tiles Left: <span id="bag-count">0</span></div>
@@ -245,6 +246,53 @@
             <p class="boss-defeat-reward" id="boss-defeat-reward"></p>
             <button id="boss-defeat-continue-btn" class="boss-fight-btn">Continue</button>
         </div>
+    </div>
+</div>
+
+<!-- ===== Keyboard Shortcuts Modal ===== -->
+<div id="kbd-shortcuts-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,5,8,0.88); justify-content: center; align-items: center; z-index: 6000;">
+    <div style="background: linear-gradient(135deg, #1a3028 0%, #1c352d 100%); border: 3px solid #4a6e52; border-radius: 14px; padding: 30px 35px; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); font-family: 'Georgia', serif; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid rgba(253,250,242,0.1); padding-bottom: 12px;">
+            <h2 style="margin: 0; color: #fdfaf2; font-size: 22px;">⌨️ Keyboard Shortcuts</h2>
+            <button id="close-kbd-btn" style="background: none; border: none; color: #fdfaf2; font-size: 28px; cursor: pointer; padding: 0; box-shadow: none;">&times;</button>
+        </div>
+        <div style="display: grid; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Select hand tile 1-7</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">1 – 7</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Submit word</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">Enter / Space</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Remove last placed tile</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">Backspace</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Shuffle / redraw hand</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">R</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Toggle mute</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">M</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Close modals / drawers</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">Esc</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Cycle through hand tiles</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">Tab</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                <span style="color: #ccc;">Open this help</span>
+                <span style="color: #4caf50; font-weight: bold; font-family: monospace; font-size: 15px; background: rgba(76,175,80,0.12); padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px;">?</span>
+            </div>
+        </div>
+        <p style="color: #888; font-size: 12px; margin-top: 16px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+            Shortcuts only active during gameplay (not when typing in search fields).
+        </p>
     </div>
 </div>
 

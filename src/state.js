@@ -310,7 +310,8 @@ export const gameState = {
     startCell: { x: 3, y: 3 },
     activeBoss: null,
     defeatedBosses: [],
-    endlessNegativeCells: 0
+    endlessNegativeCells: 0,
+    kbdFocusedHandIndex: -1
 };
 
 export function saveGame() {

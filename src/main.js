@@ -1057,6 +1057,166 @@ function setupEventListeners() {
             trans.classList.add('show');
         };
     }
+
+    // ===== Keyboard Shortcuts Modal =====
+    const kbdModal = document.getElementById('kbd-shortcuts-modal');
+    const kbdBtn = document.getElementById('keyboard-shortcuts-btn');
+    const closeKbdBtn = document.getElementById('close-kbd-btn');
+
+    function openKbdModal() {
+        if (kbdModal) kbdModal.style.display = 'flex';
+    }
+    function closeKbdModal() {
+        if (kbdModal) kbdModal.style.display = 'none';
+    }
+    if (kbdBtn) kbdBtn.onclick = openKbdModal;
+    if (closeKbdBtn) closeKbdBtn.onclick = closeKbdModal;
+    if (kbdModal) {
+        kbdModal.addEventListener('click', (e) => {
+            if (e.target === kbdModal) closeKbdModal();
+        });
+    }
+
+    // ===== Global Keyboard Shortcuts =====
+    function closeAllModalsAndDrawers() {
+        // Close modals
+        const modals = ['win-modal', 'loss-modal', 'kbd-shortcuts-modal', 'scoring-animation',
+            'boss-intro-screen', 'boss-defeat-screen', 'round-transition', 'shop-screen'];
+        modals.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        // Close drawer backdrop + all drawers
+        if (backdrop) {
+            document.querySelectorAll('.drawer.open').forEach(d => d.classList.remove('open'));
+            openDrawers.clear();
+            updateDrawerBackdrop();
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        // Don't intercept if user is typing in an input/textarea
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+        // Don't fire on repeated key holds
+        if (e.repeat) return;
+
+        const gameContainer = document.getElementById('game-container');
+        const gameVisible = gameContainer && gameContainer.style.display !== 'none';
+
+        const key = e.key;
+        const code = e.code || e.key;
+
+        // Escape: close modals/drawers (always works, even on menu)
+        if (key === 'Escape') {
+            if (kbdModal && kbdModal.style.display === 'flex') {
+                closeKbdModal();
+                e.preventDefault();
+                return;
+            }
+            if (gameVisible) {
+                closeAllModalsAndDrawers();
+                e.preventDefault();
+            }
+            return;
+        }
+
+        // Only game shortcuts apply when game container is visible
+        if (!gameVisible) return;
+
+        // ? — open keyboard shortcuts help
+        if (key === '?') {
+            openKbdModal();
+            e.preventDefault();
+            return;
+        }
+
+        // Tab: cycle through hand tiles
+        if (key === 'Tab') {
+            e.preventDefault();
+            if (gameState.hand.length === 0) return;
+            gameState.selectedHandIndices.clear();
+            gameState.kbdFocusedHandIndex++;
+            if (gameState.kbdFocusedHandIndex >= gameState.hand.length) {
+                gameState.kbdFocusedHandIndex = 0;
+            }
+            gameState.selectedHandIndices.add(gameState.kbdFocusedHandIndex);
+            renderUI();
+            return;
+        }
+
+        // Number keys 1-7: select hand tile by position (1-indexed)
+        if (key >= '1' && key <= '7') {
+            e.preventDefault();
+            const idx = parseInt(key, 10) - 1;
+            if (idx < gameState.hand.length) {
+                gameState.kbdFocusedHandIndex = idx;
+                if (e.shiftKey) {
+                    // Shift + number: multi-select (toggle)
+                    onTileClick(idx);
+                } else {
+                    // Single select
+                    gameState.selectedHandIndices.clear();
+                    gameState.selectedHandIndices.add(idx);
+                    renderUI();
+                }
+            }
+            return;
+        }
+
+        // Enter / Space: submit word
+        if (key === 'Enter' || key === ' ') {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn && !submitBtn.disabled) {
+                submitBtn.click();
+            }
+            return;
+        }
+
+        // Backspace: remove last placed tile
+        if (key === 'Backspace') {
+            e.preventDefault();
+            removeLastPlacedTile();
+            return;
+        }
+
+        // R: shuffle hand
+        if (key === 'r' || key === 'R') {
+            e.preventDefault();
+            const shuffleBtn = document.getElementById('shuffle-hand-btn');
+            if (shuffleBtn) shuffleBtn.click();
+            return;
+        }
+
+        // M: mute/unmute
+        if (key === 'm' || key === 'M') {
+            e.preventDefault();
+            const muteBtn = document.getElementById('mute-btn');
+            if (muteBtn) muteBtn.click();
+            return;
+        }
+    });
+}
+
+function removeLastPlacedTile() {
+    // Find the non-locked tile closest to bottom-right (most recently placed)
+    for (let y = GRID_SIZE - 1; y >= 0; y--) {
+        for (let x = GRID_SIZE - 1; x >= 0; x--) {
+            const tile = gameState.board[y][x];
+            if (tile && !tile.isLocked) {
+                if (gameState.hand.length < gameState.handSize) {
+                    gameState.hand.push(tile);
+                    gameState.board[y][x] = null;
+                    gameState.selectedHandIndices.clear();
+                    saveGame();
+                    renderUI();
+                }
+                return;
+            }
+        }
+    }
 }
 
 function renderAchievementsList() {

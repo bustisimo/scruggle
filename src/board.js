@@ -411,6 +411,37 @@ export function renderBagDrawer() {
     if (!container) return;
     container.innerHTML = '';
 
+    // ── Letter distribution summary (compact A-Z grid) ───────────────────
+    const letterCounts = computeBagLetterCounts();
+    const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+    const summaryEl = document.createElement('div');
+    summaryEl.className = 'bag-letter-summary';
+
+    allLetters.forEach(letter => {
+        const count = letterCounts[letter] || 0;
+        const cell = document.createElement('span');
+        cell.className = 'bag-letter-cell';
+        if (count === 0) cell.classList.add('bag-letter-zero');
+        cell.innerHTML = `${letter} <span class="bag-letter-count">${count}</span>`;
+        summaryEl.appendChild(cell);
+    });
+
+    container.appendChild(summaryEl);
+
+    // ── Detailed grouped tile view ───────────────────────────────────────
+    const divider = document.createElement('hr');
+    divider.className = 'bag-drawer-divider';
+    container.appendChild(divider);
+
+    const detailedLabel = document.createElement('div');
+    detailedLabel.className = 'bag-drawer-section-label';
+    detailedLabel.innerText = 'Tiles by Type';
+    container.appendChild(detailedLabel);
+
+    const tileGrid = document.createElement('div');
+    tileGrid.className = 'mini-tiles-container';
+
     const groups = {};
     gameState.bag.forEach(tile => {
         const inkVal = tile.ink || '';
@@ -439,32 +470,33 @@ export function renderBagDrawer() {
     });
 
     if (sortedKeys.length === 0) {
-        container.innerHTML = '<div style="grid-column: span 4; text-align: center; color: #aaa; padding: 20px 0;">Bag is empty</div>';
-        return;
+        tileGrid.innerHTML = '<div style="grid-column: span 4; text-align: center; color: #aaa; padding: 20px 0;">Bag is empty</div>';
+    } else {
+        sortedKeys.forEach(key => {
+            const group = groups[key];
+            const miniTile = document.createElement('div');
+            miniTile.className = 'mini-tile';
+
+            let inkClass = '';
+            let badgeHTML = '';
+            if (group.ink) {
+                inkClass = ` ink-${group.ink}`;
+                badgeHTML = `<span class="mini-ink-badge">${group.ink.toUpperCase()}</span>`;
+            }
+
+            miniTile.innerHTML = `
+                <div class="mini-tile-body${inkClass}">
+                    ${badgeHTML}
+                    <span class="mini-letter">${group.letter}</span>
+                    <span class="mini-value">${group.value}</span>
+                </div>
+                <span class="mini-count">x${group.count}</span>
+            `;
+            tileGrid.appendChild(miniTile);
+        });
     }
 
-    sortedKeys.forEach(key => {
-        const group = groups[key];
-        const miniTile = document.createElement('div');
-        miniTile.className = 'mini-tile';
-
-        let inkClass = '';
-        let badgeHTML = '';
-        if (group.ink) {
-            inkClass = ` ink-${group.ink}`;
-            badgeHTML = `<span class="mini-ink-badge">${group.ink.toUpperCase()}</span>`;
-        }
-
-        miniTile.innerHTML = `
-            <div class="mini-tile-body${inkClass}">
-                ${badgeHTML}
-                <span class="mini-letter">${group.letter}</span>
-                <span class="mini-value">${group.value}</span>
-            </div>
-            <span class="mini-count">x${group.count}</span>
-        `;
-        container.appendChild(miniTile);
-    });
+    container.appendChild(tileGrid);
 }
 
 /**

@@ -285,7 +285,11 @@ export const bookmarksRegistry = {
         name: 'Combo Master',
         desc: 'Doubles the bonus score earned from your combo/streak.',
         price: 25,
-        hooks: {}
+        hooks: {
+            onComboScored(state, context) {
+                context.comboMultiplier = 2;
+            }
+        }
     }
 };
 

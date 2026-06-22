@@ -1041,6 +1041,7 @@ button:disabled {
 /* Scoreboard styling */
 #scoreboard {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 30px;
@@ -1052,6 +1053,7 @@ button:disabled {
     box-shadow: 0 8px 16px rgba(0,0,0,0.4), inset 0 0 10px rgba(90,46,23,0.1);
     font-family: 'Georgia', serif;
     margin-bottom: 12px;
+    position: relative;
 }
 
 .score-box {
@@ -1140,18 +1142,13 @@ button:disabled {
     from { box-shadow: 0 4px 0 #bf360c, 0 0 8px rgba(255, 145, 0, 0.3); }
     to { box-shadow: 0 4px 0 #bf360c, 0 0 18px rgba(255, 145, 0, 0.7); }
 }
-@keyframes tile-snap {
-    0% { transform: scale(0.8); opacity: 0.6; }
-    60% { transform: scale(1.08); }
-    100% { transform: scale(1); opacity: 1; }
-}
-.tile.just-placed { animation: tile-snap 0.25s ease-out; }
-@keyframes word-flash {
-    0% { filter: brightness(1); }
-    50% { filter: brightness(1.4) saturate(1.5); }
-    100% { filter: brightness(1); }
-}
-.tile.word-highlight { animation: word-flash 0.6s ease-in-out 2; }
+
+/* Tile draw slide-in: removed duplicate, now uses hand-enter below */
+
+/* Board shake removed duplicate, now uses board-shake below */
+
+/* Progress bar moved to section 5 below */
+
 body::before {
     content: '';
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -1458,4 +1455,140 @@ body::before {
 @keyframes bossPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
+}
+
+/* ===== Board Animation Polish ===== */
+
+/* 1. Tile placement bounce — enhances existing tile-snap */
+@keyframes tile-place-bounce {
+    0% { transform: scale(0.3) translateY(-30px); opacity: 0; }
+    40% { transform: scale(1.12) translateY(-4px); opacity: 1; }
+    65% { transform: scale(0.95) translateY(2px); }
+    85% { transform: scale(1.03) translateY(-1px); }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.tile.just-placed {
+    animation: tile-place-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 2. Center star pulse/glow */
+@keyframes center-star-glow {
+    0% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.1); }
+    100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.2); }
+}
+.cell.center {
+    animation: center-star-glow 2.5s ease-in-out infinite;
+}
+
+/* 3. Hand tile slide-in from right */
+@keyframes hand-tile-slide {
+    0% { transform: translateX(80px) scale(0.6); opacity: 0; }
+    60% { transform: translateX(-8px) scale(1.05); opacity: 1; }
+    80% { transform: translateX(3px) scale(0.98); }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+.tile.hand-enter {
+    animation: hand-tile-slide 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 4. Board shake on invalid attempt */
+@keyframes board-shake {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-6px) rotate(-0.5deg); }
+    20% { transform: translateX(6px) rotate(0.5deg); }
+    30% { transform: translateX(-5px) rotate(-0.4deg); }
+    40% { transform: translateX(5px) rotate(0.4deg); }
+    50% { transform: translateX(-3px) rotate(-0.2deg); }
+    60% { transform: translateX(3px) rotate(0.2deg); }
+    70% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+    90% { transform: translateX(-1px); }
+}
+#board.board-shake {
+    animation: board-shake 0.5s ease-in-out;
+}
+
+/* 5. Progress bar under scoreboard */
+.progress-bar-container {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: rgba(90, 46, 23, 0.15);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 6px 0 0;
+    grid-column: 1 / -1;
+}
+#progress-bar-fill.progress-bar-fill,
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -30%;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: progress-sweep 2s ease-in-out infinite;
+}
+/* Sweep highlight on the progress fill */
+@keyframes progress-sweep {
+    0% { left: -30%; }
+    100% { left: 130%; }
+}
+/* When near target, pulse the fill */
+.progress-bar-fill.high-pulse {
+    animation: progress-glow-pulse 1s ease-in-out 3;
+}
+@keyframes progress-glow-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.5); box-shadow: 0 0 8px rgba(76, 175, 80, 0.6); }
+}
+/* When over target (completed bar) */
+.progress-bar-fill.complete {
+    background: linear-gradient(90deg, #ffd700, #ffeb3b);
+    animation: progress-complete-glow 0.8s ease-in-out 2;
+}
+@keyframes progress-complete-glow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.6); box-shadow: 0 0 12px rgba(255, 215, 0, 0.6); }
+}
+
+/* Word highlight animation on scored tiles */
+@keyframes word-flash-extended {
+    0% { filter: brightness(1); box-shadow: 0 4px 0 #bca675, 0 6px 10px rgba(0,0,0,0.3); }
+    30% { filter: brightness(1.6) saturate(2); box-shadow: 0 4px 0 #bca675, 0 0 20px rgba(0, 255, 136, 0.5); }
+    60% { filter: brightness(1.3) saturate(1.4); box-shadow: 0 4px 0 #bca675, 0 0 12px rgba(0, 255, 136, 0.3); }
+    100% { filter: brightness(1); box-shadow: 0 4px 0 #bca675, 0 6px 10px rgba(0,0,0,0.3); }
+}
+.tile.word-highlight {
+    animation: word-flash-extended 0.8s ease-in-out 2;
+}
+
+/* Score value counter-pop animation */
+.score-value.score-pop {
+    animation: score-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes score-pop-in {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* Bag count badge pulse when tiles are drawn */
+#bag-count-badge.bag-pulse {
+    animation: bag-badge-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes bag-badge-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
 }

@@ -76,6 +76,8 @@ export function renderBoard(onCellClick, renderCallback) {
                 } else {
                     if (validation.validCoords.has(`${x},${y}`)) tileEl.classList.add('valid');
                     else if (validation.invalidCoords.has(`${x},${y}`)) tileEl.classList.add('invalid');
+                    // Animate newly placed tiles with a bounce
+                    tileEl.classList.add('just-placed');
                 }
                 cell.appendChild(tileEl);
             } else {
@@ -175,6 +177,9 @@ export function renderHand(onTileClick, renderCallback) {
             e.stopPropagation();
             onTileClick(index);
         };
+        // Animate tile sliding into hand from the side
+        tileEl.classList.add('hand-enter');
+        tileEl.style.animationDelay = `${index * 60}ms`;
         handEl.appendChild(tileEl);
     });
 }

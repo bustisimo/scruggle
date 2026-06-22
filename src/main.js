@@ -337,6 +337,9 @@ function drawTiles() {
 }
 
 function renderUI() {
+    const prevScore = document.getElementById('score').innerText;
+    const prevBag = document.getElementById('bag-count-badge').innerText;
+
     document.getElementById('score').innerText = gameState.score;
     document.getElementById('gold').innerText = gameState.gold;
     document.getElementById('bag-count').innerText = gameState.bag.length;
@@ -345,9 +348,31 @@ function renderUI() {
     document.getElementById('hands').innerText = gameState.handsLeft;
     document.getElementById('discards').innerText = gameState.discardsLeft;
 
+    // Score pop animation when score changes
+    const scoreEl = document.getElementById('score');
+    if (prevScore !== '' + gameState.score) {
+        scoreEl.classList.remove('score-pop');
+        void scoreEl.offsetWidth;
+        scoreEl.classList.add('score-pop');
+    }
+
+    // Progress bar animation
+    const fill = document.getElementById('progress-bar-fill');
+    const pct = Math.min(100, (gameState.score / gameState.targetScore) * 100);
+    fill.style.width = pct + '%';
+    // Pulse when near target (75%+)
+    fill.classList.toggle('high-pulse', pct >= 75 && pct < 100);
+    fill.classList.toggle('complete', pct >= 100);
+
     const bagCountBadge = document.getElementById('bag-count-badge');
     if (bagCountBadge) {
+        const prev = bagCountBadge.innerText;
         bagCountBadge.innerText = gameState.bag.length;
+        if (prev !== '' + gameState.bag.length) {
+            bagCountBadge.classList.remove('bag-pulse');
+            void bagCountBadge.offsetWidth;
+            bagCountBadge.classList.add('bag-pulse');
+        }
     }
 
     renderInventory();
@@ -510,7 +535,11 @@ function setupEventListeners() {
     document.getElementById('submit-btn').onclick = async () => {
         const validation = validateBoard();
         if (!validation.allValid) {
-            alert(validation.reason || "Invalid board placement.");
+            const boardEl = document.getElementById('board');
+            boardEl.classList.remove('board-shake');
+            void boardEl.offsetWidth;
+            boardEl.classList.add('board-shake');
+            setTimeout(() => boardEl.classList.remove('board-shake'), 550);
             return;
         }
 
@@ -724,6 +753,16 @@ function setupEventListeners() {
         // Show the scoring animation
         if (wordsData.length > 0) {
             await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null);
+            // Flash scored tiles after animation closes
+            const scoredTiles = document.querySelectorAll('#board .tile.locked');
+            if (scoredTiles.length > 0) {
+                scoredTiles.forEach(el => el.classList.add('word-highlight'));
+                setTimeout(() => {
+                    document.querySelectorAll('#board .tile.word-highlight').forEach(el => {
+                        el.classList.remove('word-highlight');
+                    });
+                }, 1800);
+            }
         } else {
             // No new words scored — skip animation
             if (bossMessage) alert(bossMessage);

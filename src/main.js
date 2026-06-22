@@ -699,18 +699,15 @@ function setupEventListeners() {
     // Theme toggle
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) {
-        // Restore saved theme
         const savedTheme = localStorage.getItem('scruggle_theme');
         if (savedTheme === 'light') {
             document.body.classList.add('theme-light');
-            themeBtn.classList.add('theme-light-btn');
             themeBtn.innerText = 'Light';
         } else {
             themeBtn.innerText = 'Dark';
         }
         themeBtn.onclick = () => {
             const isLight = document.body.classList.toggle('theme-light');
-            themeBtn.classList.toggle('theme-light-btn', isLight);
             themeBtn.innerText = isLight ? 'Light' : 'Dark';
             localStorage.setItem('scruggle_theme', isLight ? 'light' : 'dark');
         };

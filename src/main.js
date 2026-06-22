@@ -1164,6 +1164,21 @@ function setupEventListeners() {
             });
         }
 
+        // Boss mechanic: The Mirror — capture NEWLY PLACED (unlocked) tile positions
+        // BEFORE the lock loop, since locking sets isLocked=true and the Mirror
+        // needs to know which tiles were just placed this submission.
+        let mirrorNewTiles = [];
+        if (gameState.activeBoss === 'the_mirror') {
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const tile = gameState.board[y][x];
+                    if (tile && !tile.isLocked) {
+                        mirrorNewTiles.push({ x, y, letter: tile.letter, value: tile.value });
+                    }
+                }
+            }
+        }
+
         for (let y = 0; y < GRID_SIZE; y++) {
             for (let x = 0; x < GRID_SIZE; x++) {
                 const tile = gameState.board[y][x];
@@ -1192,21 +1207,29 @@ function setupEventListeners() {
         drawTiles();
 
         // Boss mechanic: The Mirror — place mirrored tiles at opposite positions
+        // (using positions captured BEFORE the lock loop above)
         let mirrorResult = null;
-        if (gameState.activeBoss === 'the_mirror') {
-            mirrorResult = BOSSES.the_mirror.onSubmission(gameState);
-            if (mirrorResult.mirroredPairs && mirrorResult.mirroredPairs.length > 0) {
-                for (const pair of mirrorResult.mirroredPairs) {
-                    const sourceTile = gameState.board[pair.from.y][pair.from.x];
-                    if (sourceTile) {
-                        gameState.board[pair.to.y][pair.to.x] = {
-                            letter: sourceTile.letter,
-                            value: sourceTile.value,
-                            isLocked: false
-                        };
-                    }
+        if (gameState.activeBoss === 'the_mirror' && mirrorNewTiles.length > 0) {
+            const mirroredPairs = [];
+            for (const nt of mirrorNewTiles) {
+                const mx = 6 - nt.x;
+                const my = 6 - nt.y;
+                if (!gameState.board[my][mx]) {
+                    mirroredPairs.push({ from: { x: nt.x, y: nt.y }, to: { x: mx, y: my } });
                 }
             }
+            for (const pair of mirroredPairs) {
+                gameState.board[pair.to.y][pair.to.x] = {
+                    letter: pair.from.letter,
+                    value: pair.from.value,
+                    isLocked: false
+                };
+            }
+            mirrorResult = {
+                message: mirroredPairs.length > 0
+                    ? `🪞 Mirror reflects ${mirroredPairs.length} tile${mirroredPairs.length > 1 ? 's' : ''}!`
+                    : null
+            };
         }
 
         drawTiles();

@@ -1,6 +1,7 @@
 import {
     gameState, GRID_SIZE, letterDist, shopItems, CLASSIC_MULTIPLIERS,
-    saveGame, loadSavedGame, deleteSavedGame, FONT_BAGS, triggerHook, shuffle, getSwapCost
+    saveGame, loadSavedGame, deleteSavedGame, FONT_BAGS, triggerHook, shuffle, getSwapCost,
+    getEndlessTargetScore, getEndlessHandSize
 } from './state.js';
 import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, getTitleEmoji } from './stats.js';
 import { loadDictionary, validateBoard, findWords } from './rules.js';
@@ -227,7 +228,7 @@ function initRound(isNewRun) {
         }
     }
 
-    gameState.targetScore = gameState.currentRound * 30;
+    gameState.targetScore = getEndlessTargetScore(gameState.currentRound);
     if (gameState.goldenTicket) {
         gameState.targetScore = Math.ceil(gameState.targetScore / 2);
         gameState.goldenTicket = false;
@@ -279,6 +280,35 @@ function initRound(isNewRun) {
     if (gameState.purchasedLetters && gameState.purchasedLetters.length > 0) {
         gameState.bag.push(...gameState.purchasedLetters);
         gameState.purchasedLetters = [];
+    }
+
+    // Endless scaling: hand size reduction after round 15
+    if (gameState.currentRound > 15) {
+        const activeBag = FONT_BAGS[gameState.selectedFontBagId || 'standard'] || FONT_BAGS.standard;
+        const reduced = getEndlessHandSize(gameState.currentRound, activeBag.handSize);
+        if (reduced < gameState.handSize) {
+            gameState.handSize = reduced;
+        }
+    }
+
+    // Endless scaling: negative multiplier cells after round 20
+    const endlessNegCount = gameState.currentRound >= 21 ? Math.min(gameState.currentRound - 20, GRID_SIZE * GRID_SIZE - 4) : 0;
+    gameState.endlessNegativeCells = endlessNegCount;
+    if (endlessNegCount > 0) {
+        const candidates = [];
+        for (let y = 0; y < GRID_SIZE; y++) {
+            for (let x = 0; x < GRID_SIZE; x++) {
+                const key = `${x},${y}`;
+                if (!gameState.boardMultipliers[key] &&
+                    !(x === gameState.startCell.x && y === gameState.startCell.y)) {
+                    candidates.push({ x, y });
+                }
+            }
+        }
+        shuffle(candidates);
+        for (let i = 0; i < Math.min(endlessNegCount, candidates.length); i++) {
+            gameState.boardMultipliers[`${candidates[i].x},${candidates[i].y}`] = 'NM';
+        }
     }
 
     shuffle(gameState.bag);
@@ -347,7 +377,7 @@ function renderUI() {
     document.getElementById('score').innerText = gameState.score;
     document.getElementById('gold').innerText = gameState.gold;
     document.getElementById('bag-count').innerText = gameState.bag.length;
-    document.getElementById('round').innerText = gameState.currentRound;
+    document.getElementById('round').innerText = gameState.currentRound + (gameState.currentRound >= 21 ? ' - Endless' : '');
     document.getElementById('target').innerText = gameState.targetScore;
     document.getElementById('hands').innerText = gameState.handsLeft;
     document.getElementById('discards').innerText = gameState.discardsLeft;
@@ -587,6 +617,9 @@ function setupEventListeners() {
                     } else if (bonus === 'TL') {
                         tileContribution = tileVal * 3;
                         multiplierBadge = 'TL';
+                    } else if (bonus === 'NM') {
+                        tileContribution = Math.ceil(tileVal / 2);
+                        multiplierBadge = 'NM';
                     }
                     sumLetters += tileContribution;
 

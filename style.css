@@ -310,6 +310,9 @@ body {
 .cell.gm { background-color: rgba(62, 39, 35, 0.85); color: #ffd700; }
 .cell.gm:not(:has(.tile))::before { content: "GM"; font-size: 14px; font-weight: bold; opacity: 0.8; }
 
+.cell.nm { background-color: rgba(60, 10, 10, 0.9); color: #ff6666; }
+.cell.nm:not(:has(.tile))::before { content: "NM"; font-size: 14px; font-weight: bold; opacity: 0.8; }
+
 .cell.center {
     background-color: rgba(92, 29, 50, 0.85);
     position: relative;

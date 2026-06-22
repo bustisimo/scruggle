@@ -309,7 +309,8 @@ export const gameState = {
     goldenTicket: false,
     startCell: { x: 3, y: 3 },
     activeBoss: null,
-    defeatedBosses: []
+    defeatedBosses: [],
+    endlessNegativeCells: 0
 };
 
 export function saveGame() {
@@ -334,7 +335,8 @@ export function saveGame() {
         startCell: gameState.startCell,
         goldenTicket: gameState.goldenTicket,
         activeBoss: gameState.activeBoss,
-        defeatedBosses: gameState.defeatedBosses
+        defeatedBosses: gameState.defeatedBosses,
+        endlessNegativeCells: gameState.endlessNegativeCells
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
@@ -365,6 +367,7 @@ export function loadSavedGame() {
         gameState.goldenTicket = data.goldenTicket || false;
         gameState.activeBoss = data.activeBoss || null;
         gameState.defeatedBosses = data.defeatedBosses || [];
+        gameState.endlessNegativeCells = data.endlessNegativeCells || 0;
         return true;
     } catch (e) {
         return false;
@@ -377,6 +380,17 @@ export function deleteSavedGame() {
 
 // Removed unused swap cost logic - now based on bag capacity instead of discardsLeft
 export function getSwapCost() { return 0; // No longer tracking swap costs via discards
+}
+
+export function getEndlessTargetScore(round) {
+    if (round < 21) return round * 30;
+    return Math.round(round * 35 + round * round * 1.5);
+}
+
+export function getEndlessHandSize(round, baseHandSize) {
+    if (round <= 15) return baseHandSize;
+    const reduction = Math.floor((round - 16) / 5) + 1;
+    return Math.max(4, baseHandSize - reduction);
 }
 
 export function shuffle(array) {

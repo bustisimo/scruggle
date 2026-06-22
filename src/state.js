@@ -443,7 +443,7 @@ export function getEndlessTargetScore(round) {
     // ──────────────────────────────────────────────────────────────────────
     if (round < 5) return round * 30;
     if (round <= 20) return Math.floor(round * 24 + 30);
-    return Math.floor(round * 28 + round * round * 0.8);
+    return Math.floor(round * 35 + round * round * 1.5);
 }
 
 export function getEndlessHandSize(round, baseHandSize) {

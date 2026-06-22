@@ -1206,15 +1206,18 @@ function setupEventListeners() {
         }
 
         drawTiles();
-        saveGame();
-        renderUI();
 
-        // Boss mechanic: Ink Thief steals tiles after submission
+        // Boss mechanic: Ink Thief steals tiles AFTER drawing (before save/render)
         let bossMessage = '';
         if (gameState.activeBoss === 'ink_thief') {
             const result = BOSSES.ink_thief.onSubmission(gameState);
             if (result.message) bossMessage = result.message;
+            // Refill hand from bag after theft so player isn't stuck with 5 tiles
+            drawTiles();
         }
+
+        saveGame();
+        renderUI();
 
         // Boss mechanic: The Void consumes all
         if (gameState.activeBoss === 'the_void') {
@@ -1318,6 +1321,7 @@ function setupEventListeners() {
 
     document.getElementById('start-round-btn').onclick = () => {
         document.getElementById('shop-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'flex';
         initRound(false);
         renderUI();
     };

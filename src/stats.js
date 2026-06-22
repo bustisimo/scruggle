@@ -1,6 +1,6 @@
 import { STATS_KEY } from './state.js';
 
-const defaultStats = { maxRound: 1, totalGold: 0, totalWords: 0, totalRuns: 0, totalWins: 0 };
+const defaultStats = { maxRound: 1, totalGold: 0, totalWords: 0, totalRuns: 0, totalWins: 0, inksUsed: [], bookmarksUsed: [] };
 
 export function getStats() {
     try {

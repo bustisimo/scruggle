@@ -1,7 +1,7 @@
 import {
     gameState, GRID_SIZE, letterDist, shopItems, CLASSIC_MULTIPLIERS,
     saveGame, loadSavedGame, deleteSavedGame, FONT_BAGS, triggerHook, shuffle, getSwapCost,
-    getEndlessTargetScore, getEndlessHandSize
+    getEndlessTargetScore, getEndlessHandSize, bookmarksRegistry
 } from './state.js';
 import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, getTitleEmoji } from './stats.js';
 import { loadDictionary, validateBoard, findWords } from './rules.js';
@@ -441,7 +441,7 @@ function checkWinLoss() {
                 showBossDefeat(boss);
                 incrementWins();
                 const stats = getStats();
-                checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords, bossDefeated: boss.id });
+                checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords, bossDefeated: boss.id, defeatedBosses: [...gameState.defeatedBosses] });
                 return;
             }
         }
@@ -459,7 +459,7 @@ function checkWinLoss() {
 
         // Check round-win achievements
         const stats = getStats();
-        checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords });
+        checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords, defeatedBosses: [...gameState.defeatedBosses] });
     } else if (gameState.handsLeft <= 0) {
         document.getElementById('loss-modal').style.display = 'flex';
         audio.roundLoss();
@@ -748,9 +748,25 @@ function setupEventListeners() {
 
         updateStats(gameState.currentRound, turnGold, turnWordsCount);
 
+        // Track cumulative ink types and bookmark types used
+        const curStats = getStats();
+        const allInks = new Set(curStats.inksUsed || []);
+        const allBookmarks = new Set(curStats.bookmarksUsed || []);
+        [...gameState.hand, ...gameState.bag, ...gameState.board.flat().filter(Boolean)].forEach(t => {
+            if (t.ink) allInks.add(t.ink);
+        });
+        gameState.inventory.forEach(id => {
+            if (bookmarksRegistry[id]) allBookmarks.add(id);
+        });
+        if (allInks.size > (curStats.inksUsed?.length || 0) || allBookmarks.size > (curStats.bookmarksUsed?.length || 0)) {
+            curStats.inksUsed = [...allInks];
+            curStats.bookmarksUsed = [...allBookmarks];
+            localStorage.setItem('scruggle_stats', JSON.stringify(curStats));
+        }
+
         // Check achievements after submission
         const stats = getStats();
-        checkAchievements(gameState, stats, { totalWords: stats.totalWords });
+        checkAchievements(gameState, stats, { totalWords: stats.totalWords, turnScore });
 
         // Boss mechanic: Word Eater — collect tiles from 4+ letter words to remove
         let eatenTiles = new Set();

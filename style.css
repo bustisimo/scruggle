@@ -67,6 +67,7 @@ body.theme-light {
     padding: 10px;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 10px 25px rgba(0,0,0,0.5);
     gap: 6px;
+    position: relative;
 }
 
 .cell {
@@ -1835,107 +1836,166 @@ body::before {
 
 /* ===== Board Animation Polish ===== */
 
-/* 1. Tile placement bounce — enhances existing tile-snap */
+/* 1. Tile placement bounce — spring-loaded pop with rotation overshoot */
 @keyframes tile-place-bounce {
-    0% { transform: scale(0.3) translateY(-30px); opacity: 0; }
-    40% { transform: scale(1.12) translateY(-4px); opacity: 1; }
-    65% { transform: scale(0.95) translateY(2px); }
-    85% { transform: scale(1.03) translateY(-1px); }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
+    0% { transform: scale(0.2) translateY(-40px) rotate(-15deg); opacity: 0; }
+    35% { transform: scale(1.15) translateY(-6px) rotate(3deg); opacity: 1; }
+    55% { transform: scale(0.92) translateY(3px) rotate(-1deg); }
+    70% { transform: scale(1.05) translateY(-2px) rotate(1deg); }
+    85% { transform: scale(0.98) translateY(1px) rotate(0deg); }
+    100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
 }
 .tile.just-placed {
-    animation: tile-place-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: tile-place-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 10;
 }
 
-/* 2. Center star pulse/glow */
+/* 2. Center star pulse/glow — compound breathing glow with sparkle ring */
 @keyframes center-star-glow {
-    0% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.2); }
-    50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.1); }
-    100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.2); }
+    0% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.2), inset 0 0 8px rgba(255, 215, 0, 0.05); }
+    25% { box-shadow: 0 0 14px rgba(255, 215, 0, 0.45), inset 0 0 12px rgba(255, 215, 0, 0.1); }
+    50% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.6), inset 0 0 18px rgba(255, 215, 0, 0.15); }
+    75% { box-shadow: 0 0 14px rgba(255, 215, 0, 0.45), inset 0 0 12px rgba(255, 215, 0, 0.1); }
+    100% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.2), inset 0 0 8px rgba(255, 215, 0, 0.05); }
 }
 .cell.center {
-    animation: center-star-glow 2.5s ease-in-out infinite;
+    animation: center-star-glow 3s ease-in-out infinite;
+    position: relative;
+}
+/* Center star sparkle ring — orbiting dot */
+.cell.center::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.8);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    top: 50%;
+    left: 50%;
+    margin-top: -3px;
+    margin-left: -3px;
+    animation: center-sparkle-orb 4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 5;
+}
+@keyframes center-sparkle-orb {
+    0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+    12% { transform: translate(-20px, -18px) scale(0.6); opacity: 0.3; }
+    25% { transform: translate(0, -26px) scale(1.2); opacity: 0.9; }
+    37% { transform: translate(20px, -18px) scale(0.5); opacity: 0.2; }
+    50% { transform: translate(26px, 0) scale(1); opacity: 0.8; }
+    62% { transform: translate(20px, 18px) scale(0.6); opacity: 0.3; }
+    75% { transform: translate(0, 26px) scale(1.1); opacity: 0.9; }
+    87% { transform: translate(-20px, 18px) scale(0.5); opacity: 0.2; }
+    100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+}
+/* Floating sparkle particles spawned by JS */
+@keyframes center-particle-drift {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    60% { opacity: 0.8; }
+    100% { transform: translate(0, -40px) scale(0.3); opacity: 0; }
 }
 
-/* 3. Hand tile slide-in from right */
+/* 3. Hand tile slide-in — whoosh from right with overshoot */
 @keyframes hand-tile-slide {
-    0% { transform: translateX(80px) scale(0.6); opacity: 0; }
-    60% { transform: translateX(-8px) scale(1.05); opacity: 1; }
-    80% { transform: translateX(3px) scale(0.98); }
-    100% { transform: translateX(0) scale(1); opacity: 1; }
+    0% { transform: translateX(100px) scale(0.4) rotate(-8deg); opacity: 0; }
+    50% { transform: translateX(-10px) scale(1.08) rotate(2deg); opacity: 1; }
+    70% { transform: translateX(4px) scale(0.97) rotate(-1deg); }
+    85% { transform: translateX(-2px) scale(1.02) rotate(0.5deg); }
+    100% { transform: translateX(0) scale(1) rotate(0deg); opacity: 1; }
 }
 .tile.hand-enter {
-    animation: hand-tile-slide 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: hand-tile-slide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* 4. Board shake on invalid attempt */
+/* 4. Board shake on invalid attempt — aggressive with red flash tint */
 @keyframes board-shake {
-    0%, 100% { transform: translateX(0); }
-    10% { transform: translateX(-6px) rotate(-0.5deg); }
-    20% { transform: translateX(6px) rotate(0.5deg); }
-    30% { transform: translateX(-5px) rotate(-0.4deg); }
-    40% { transform: translateX(5px) rotate(0.4deg); }
-    50% { transform: translateX(-3px) rotate(-0.2deg); }
-    60% { transform: translateX(3px) rotate(0.2deg); }
-    70% { transform: translateX(-2px); }
-    80% { transform: translateX(2px); }
-    90% { transform: translateX(-1px); }
+    0%, 100% { transform: translateX(0); filter: brightness(1); }
+    8% { transform: translateX(-8px) rotate(-1deg); filter: brightness(1.3) saturate(1.5); }
+    16% { transform: translateX(8px) rotate(1deg); filter: brightness(1.5) saturate(1.8); }
+    24% { transform: translateX(-7px) rotate(-0.8deg); filter: brightness(1.3) saturate(1.5); }
+    32% { transform: translateX(7px) rotate(0.8deg); filter: brightness(1.2) saturate(1.3); }
+    40% { transform: translateX(-5px) rotate(-0.5deg); filter: brightness(1); }
+    50% { transform: translateX(5px) rotate(0.5deg); }
+    60% { transform: translateX(-3px) rotate(-0.3deg); }
+    70% { transform: translateX(3px) rotate(0.3deg); }
+    80% { transform: translateX(-2px); }
+    90% { transform: translateX(2px); }
 }
 #board.board-shake {
-    animation: board-shake 0.5s ease-in-out;
+    animation: board-shake 0.6s ease-in-out;
 }
 
-/* 5. Progress bar under scoreboard */
+/* Board invalid flash overlay */
+#board.board-shake::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    background: rgba(198, 40, 40, 0.12);
+    pointer-events: none;
+    z-index: 100;
+    animation: board-flash-fade 0.6s ease-out forwards;
+}
+@keyframes board-flash-fade {
+    0% { background: rgba(198, 40, 40, 0.2); }
+    50% { background: rgba(198, 40, 40, 0.08); }
+    100% { background: rgba(198, 40, 40, 0); }
+}
+
+/* 5. Progress bar under scoreboard — animated sweep with numeric feel */
 .progress-bar-container {
     position: relative;
     width: 100%;
-    height: 6px;
+    height: 8px;
     background: rgba(90, 46, 23, 0.15);
-    border-radius: 3px;
+    border-radius: 4px;
     overflow: hidden;
-    margin: 6px 0 0;
+    margin: 8px 0 0;
     grid-column: 1 / -1;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 #progress-bar-fill.progress-bar-fill,
 .progress-bar-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #4caf50, #8bc34a);
-    border-radius: 3px;
+    background: linear-gradient(90deg, #4caf50, #81c784, #aed581);
+    border-radius: 4px;
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
 }
+/* Glossy sheen that sweeps across the bar */
 .progress-bar-fill::after {
     content: '';
     position: absolute;
     top: 0;
-    left: -30%;
-    width: 30%;
+    left: -40%;
+    width: 40%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
     animation: progress-sweep 2s ease-in-out infinite;
 }
-/* Sweep highlight on the progress fill */
 @keyframes progress-sweep {
-    0% { left: -30%; }
-    100% { left: 130%; }
+    0% { left: -40%; }
+    100% { left: 140%; }
 }
-/* When near target, pulse the fill */
+/* When near target, pulse the fill with urgency */
 .progress-bar-fill.high-pulse {
-    animation: progress-glow-pulse 1s ease-in-out 3;
+    animation: progress-glow-pulse 0.8s ease-in-out 4;
 }
 @keyframes progress-glow-pulse {
     0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.5); box-shadow: 0 0 8px rgba(76, 175, 80, 0.6); }
+    50% { filter: brightness(1.6); box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
 }
-/* When over target (completed bar) */
+/* When over target (completed bar) — gold celebration */
 .progress-bar-fill.complete {
-    background: linear-gradient(90deg, #ffd700, #ffeb3b);
-    animation: progress-complete-glow 0.8s ease-in-out 2;
+    background: linear-gradient(90deg, #ffd700, #ffee58, #fff176);
+    animation: progress-complete-glow 0.8s ease-in-out 3;
 }
 @keyframes progress-complete-glow {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.6); box-shadow: 0 0 12px rgba(255, 215, 0, 0.6); }
+    0%, 100% { filter: brightness(1); box-shadow: 0 0 6px rgba(255, 215, 0, 0.3); }
+    50% { filter: brightness(1.8); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
 }
 
 /* ===== Word highlight animation on scored tiles ===== */

@@ -76,8 +76,16 @@ export function renderBoard(onCellClick, renderCallback) {
                 } else {
                     if (validation.validCoords.has(`${x},${y}`)) tileEl.classList.add('valid');
                     else if (validation.invalidCoords.has(`${x},${y}`)) tileEl.classList.add('invalid');
-                    // Animate newly placed tiles with a bounce
-                    tileEl.classList.add('just-placed');
+                    // Animate newly placed tiles with a bounce — only on first placement
+                    if (!tile._animPlaced) {
+                        tileEl.classList.add('just-placed');
+                        tile._animPlaced = true;
+                        // Remove animation class after it finishes so it doesn't interfere with hover
+                        setTimeout(() => {
+                            const els = document.querySelectorAll('#board .tile.just-placed');
+                            els.forEach(el => el.classList.remove('just-placed'));
+                        }, 500);
+                    }
                 }
                 cell.appendChild(tileEl);
             } else {
@@ -115,6 +123,9 @@ export function renderBoard(onCellClick, renderCallback) {
                     const dragIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
                     if (!isNaN(dragIndex) && dragIndex >= 0 && dragIndex < gameState.hand.length) {
                         gameState.board[y][x] = gameState.hand.splice(dragIndex, 1)[0];
+                        // Reset flags for fresh placement animation
+                        delete gameState.board[y][x]._animPlaced;
+                        delete gameState.board[y][x]._animHandEnter;
                         gameState.selectedHandIndices.clear();
                         delete gameState.draggingHandIndex; // Prevent dragend reconstruction
                         saveGame();
@@ -129,6 +140,9 @@ export function renderBoard(onCellClick, renderCallback) {
     document.getElementById('submit-btn').disabled = !validation.allValid || !gameState.dictionaryLoaded || gameState.handsLeft <= 0;
     const swapCost = getSwapCost();
     // Update inventory rendering logic to show gold changes
+
+    // Spawn floating sparkle particles around the center star
+    spawnCenterSparkles();
 }
 
 /**
@@ -267,9 +281,17 @@ export function renderHand(onTileClick, renderCallback) {
             e.stopPropagation();
             onTileClick(index);
         };
-        // Animate tile sliding into hand from the side
-        tileEl.classList.add('hand-enter');
-        tileEl.style.animationDelay = `${index * 60}ms`;
+        // Animate tile sliding into hand from the side — only on first appearance
+        if (!tile._animHandEnter) {
+            tileEl.classList.add('hand-enter');
+            tileEl.style.animationDelay = `${index * 60}ms`;
+            tile._animHandEnter = true;
+            // Clean up animation class after it finishes
+            setTimeout(() => {
+                tileEl.classList.remove('hand-enter');
+                tileEl.style.animationDelay = '';
+            }, 500 + index * 60);
+        }
         handEl.appendChild(tileEl);
     });
 }
@@ -337,6 +359,9 @@ export function handleBoardClick(x, y, saveCallback, renderCallback) {
     const tile = gameState.board[y][x];
     if (tile && !tile.isLocked) {
         if (gameState.hand.length < gameState.handSize) {
+            // Reset animation flags so tile re-animates when placed again
+            delete tile._animPlaced;
+            delete tile._animHandEnter;
             gameState.hand.push(gameState.board[y][x]);
             gameState.board[y][x] = null;
             saveCallback();
@@ -347,6 +372,8 @@ export function handleBoardClick(x, y, saveCallback, renderCallback) {
     if (!tile && gameState.selectedHandIndices.size === 1) {
         const index = Array.from(gameState.selectedHandIndices)[0];
         gameState.board[y][x] = gameState.hand.splice(index, 1)[0];
+        // Flag for hand-enter re-animation when tile returns to hand
+        delete gameState.board[y][x]._animHandEnter;
         gameState.selectedHandIndices.clear();
         import('./audio.js').then(m => m.default.tilePlace());
         saveCallback();
@@ -438,4 +465,48 @@ export function renderBagDrawer() {
         `;
         container.appendChild(miniTile);
     });
+}
+
+/**
+ * Spawn floating sparkle particles around the center star cell.
+ * Each render spawns 2 particles that drift upward and fade.
+ */
+function spawnCenterSparkles() {
+    const boardEl = document.getElementById('board');
+    if (!boardEl) return;
+    const centerCell = boardEl.querySelector('.cell.center');
+    if (!centerCell) return;
+
+    // Use a global counter to throttle — only add particles occasionally
+    window._sparkleCounter = (window._sparkleCounter || 0) + 1;
+    if (window._sparkleCounter % 3 !== 0) return; // Only spawn every 3rd render
+
+    for (let i = 0; i < 2; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'center-sparkle-particle';
+        // Random offset around the cell (within ±30px)
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 10 + Math.random() * 25;
+        const xOff = Math.cos(angle) * dist;
+        const yOff = Math.sin(angle) * dist;
+        const size = 3 + Math.random() * 5;
+        sparkle.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, ${0.5 + Math.random() * 0.5});
+            box-shadow: 0 0 ${size * 2}px rgba(255, 215, 0, 0.4);
+            left: calc(50% + ${xOff}px);
+            top: calc(50% + ${yOff}px);
+            z-index: 6;
+            pointer-events: none;
+            animation: center-particle-drift ${0.8 + Math.random() * 0.6}s ease-out forwards;
+        `;
+        centerCell.appendChild(sparkle);
+        // Remove after animation
+        setTimeout(() => {
+            if (sparkle.parentNode) sparkle.remove();
+        }, 1600);
+    }
 }

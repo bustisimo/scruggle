@@ -1312,6 +1312,9 @@ function removeLastPlacedTile() {
             const tile = gameState.board[y][x];
             if (tile && !tile.isLocked) {
                 if (gameState.hand.length < gameState.handSize) {
+                    // Reset animation flags so tile re-animates when placed again
+                    delete tile._animPlaced;
+                    delete tile._animHandEnter;
                     gameState.hand.push(tile);
                     gameState.board[y][x] = null;
                     gameState.selectedHandIndices.clear();

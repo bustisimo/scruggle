@@ -90,7 +90,9 @@ export function renderBoard(onCellClick, renderCallback) {
                 cell.appendChild(tileEl);
             } else {
                 // Hover highlight for valid placement area
+                // Also highlight the hovered cell itself to show it's clickable
                 cell.addEventListener('mouseenter', () => {
+                    cell.classList.add('cell-hover-target');
                     // Determine valid adjacent cells for this empty cell
                     const adjCells = getValidAdjacentCells(x, y);
                     adjCells.forEach(([ax, ay]) => {
@@ -102,6 +104,7 @@ export function renderBoard(onCellClick, renderCallback) {
                     });
                 });
                 cell.addEventListener('mouseleave', () => {
+                    cell.classList.remove('cell-hover-target');
                     boardEl.querySelectorAll('.cell.valid-placement').forEach(el => {
                         el.classList.remove('valid-placement');
                     });

@@ -183,10 +183,18 @@ function setupDictionarySearch() {
                 // Scroll results back to top when new results come in
                 results.scrollTop = 0;
 
+                const totalDictSize = gameState.dictionary ? gameState.dictionary.size : 0;
                 const matchLabel = matches.length >= 200 ? '200+' : matches.length;
-                if (matchCount) matchCount.innerText = `${matchLabel} results`;
+                const matchPct = ((matches.length / totalDictSize) * 100).toFixed(2);
+                if (matchCount) {
+                    matchCount.innerText = `${matchLabel} results`;
+                    matchCount.classList.remove('highlighted');
+                    void matchCount.offsetWidth;
+                    if (matches.length > 0) matchCount.classList.add('highlighted');
+                    matchCount.title = `${matches.length} / ${totalDictSize} words (${matchPct}%)`;
+                }
 
-                results.innerHTML = matches.map(w => `<div>${w}</div>`).join('');
+                results.innerHTML = matches.map(w => `<div title="${w.length} letters">${w}</div>`).join('');
             }
         }, 150);
     };

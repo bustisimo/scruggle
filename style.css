@@ -51,12 +51,15 @@ body.theme-light #start-content {
 
 body {
     background:
-        radial-gradient(circle at 30% 20%, #2d6648 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, #236045 0%, transparent 50%),
+        radial-gradient(circle at 20% 15%, #3a7a58 0%, transparent 40%),
+        radial-gradient(circle at 80% 25%, #2d7a5a 0%, transparent 35%),
+        radial-gradient(circle at 45% 70%, #286c4a 0%, transparent 45%),
+        radial-gradient(circle at 70% 85%, #1e5a3d 0%, transparent 30%),
+        radial-gradient(circle at 30% 80%, #2a5e45 0%, transparent 40%),
         radial-gradient(circle at 50% 50%, #1e4a38 0%, #1c352d 100%);
-    background-size: 200% 200%, 200% 200%, 100% 100%;
-    background-position: 0% 50%, 100% 50%, 0% 0%;
-    animation: ambient-gradient 24s ease-in-out infinite alternate;
+    background-size: 250% 250%, 220% 220%, 200% 200%, 180% 180%, 200% 200%, 100% 100%;
+    background-position: 0% 50%, 100% 50%, 50% 50%, 0% 100%, 100% 0%, 0% 0%;
+    animation: ambient-gradient 36s ease-in-out infinite alternate;
     color: var(--parchment);
     font-family: 'Georgia', Garamond, serif;
     display: flex;
@@ -65,25 +68,30 @@ body {
     margin: 0;
     padding: 20px;
     user-select: none;
+    overflow-x: hidden;
 }
 
 body.theme-light {
     background:
-        radial-gradient(circle at 30% 20%, #c8e6c9 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, #a5d6a7 0%, transparent 50%),
+        radial-gradient(circle at 20% 15%, #bbdbbd 0%, transparent 40%),
+        radial-gradient(circle at 80% 25%, #d0e8d2 0%, transparent 35%),
+        radial-gradient(circle at 45% 70%, #c5e0c7 0%, transparent 45%),
+        radial-gradient(circle at 70% 85%, #b8d4ba 0%, transparent 30%),
+        radial-gradient(circle at 30% 80%, #cde2cf 0%, transparent 40%),
         radial-gradient(circle at 50% 50%, #e8f5e9 0%, #c8e6c9 100%);
-    background-size: 200% 200%, 200% 200%, 100% 100%;
-    background-position: 0% 50%, 100% 50%, 0% 0%;
-    animation: ambient-gradient 24s ease-in-out infinite alternate;
+    background-size: 250% 250%, 220% 220%, 200% 200%, 180% 180%, 200% 200%, 100% 100%;
+    background-position: 0% 50%, 100% 50%, 50% 50%, 0% 100%, 100% 0%, 0% 0%;
+    animation: ambient-gradient 36s ease-in-out infinite alternate;
     color: var(--tile-text);
 }
 
 @keyframes ambient-gradient {
-    0% { background-position: 0% 30%, 100% 70%, 0% 0%; }
-    25% { background-position: 30% 10%, 70% 90%, 0% 0%; }
-    50% { background-position: 50% 50%, 50% 50%, 0% 0%; }
-    75% { background-position: 70% 10%, 30% 90%, 0% 0%; }
-    100% { background-position: 100% 30%, 0% 70%, 0% 0%; }
+    0% { background-position: 0% 30%, 100% 70%, 50% 50%, 0% 100%, 100% 0%, 0% 0%; }
+    20% { background-position: 30% 10%, 70% 90%, 30% 40%, 20% 80%, 80% 20%, 0% 0%; }
+    40% { background-position: 60% 20%, 40% 60%, 70% 60%, 40% 60%, 60% 40%, 0% 0%; }
+    60% { background-position: 70% 60%, 30% 40%, 20% 80%, 60% 30%, 30% 70%, 0% 0%; }
+    80% { background-position: 40% 80%, 60% 20%, 80% 20%, 80% 40%, 40% 80%, 0% 0%; }
+    100% { background-position: 100% 30%, 0% 70%, 50% 50%, 100% 0%, 0% 100%, 0% 0%; }
 }
 
 #game-container {
@@ -119,12 +127,25 @@ body.theme-light {
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .cell:hover {
     background-color: rgba(20, 38, 32, 0.85);
     box-shadow: inset 0 3px 8px rgba(0,0,0,0.6);
+}
+
+/* Cell hover-placement glow — when hovering an empty cell, show a subtle border glow indicating it's a click target */
+.cell:not(:has(.tile)):hover {
+    box-shadow: inset 0 0 12px rgba(76, 175, 80, 0.25), inset 0 3px 5px rgba(0,0,0,0.5);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+/* Hover target cell glow — highlights the cell itself while hovering for placement preview */
+.cell.cell-hover-target {
+    box-shadow: inset 0 0 16px rgba(76, 175, 80, 0.3), inset 0 3px 5px rgba(0,0,0,0.5);
+    border-color: rgba(76, 175, 80, 0.35);
+    background-color: rgba(46, 125, 50, 0.12);
 }
 
 .tile {
@@ -616,6 +637,7 @@ button:disabled {
     background-color: #b71c1c;
 }
 
+/* ── Drawers ─────────────────────────────────────────────────── */
 .drawer {
     position: fixed;
     top: 0;
@@ -625,7 +647,7 @@ button:disabled {
     background-color: #162a24;
     border-left: 6px solid var(--mahogany);
     box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 3500;
     padding: 20px;
     overflow-y: auto;
@@ -633,12 +655,14 @@ button:disabled {
     flex-direction: column;
     box-sizing: border-box;
     opacity: 0;
-    will-change: right, opacity;
+    transform: translateX(15px) scale(0.98);
+    will-change: right, opacity, transform;
 }
 
 .drawer.open {
     right: 0;
     opacity: 1;
+    transform: translateX(0) scale(1);
 }
 
 /* Fade-in children when drawer opens — staggered animation */
@@ -1532,7 +1556,37 @@ button:disabled {
     transition: opacity 0.3s ease;
 }
 
-/* Search results styling */
+/* ── Dictionary results ───────────────────────── */
+#dict-results {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(253,250,242,0.2) transparent;
+}
+#dict-results::-webkit-scrollbar {
+    width: 5px;
+}
+#dict-results::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+}
+#dict-results::-webkit-scrollbar-thumb {
+    background: rgba(253,250,242,0.2);
+    border-radius: 3px;
+}
+#dict-results::-webkit-scrollbar-thumb:hover {
+    background: rgba(253,250,242,0.35);
+}
+#dict-match-count {
+    font-size: 13px;
+    font-weight: normal;
+    opacity: 0.7;
+    margin-left: 6px;
+    transition: opacity 0.2s;
+}
+#dict-match-count.highlighted {
+    opacity: 1;
+    color: #4caf50;
+}
+
 #dict-results div {
     padding: 6px 12px;
     border-bottom: 1px solid rgba(253, 250, 242, 0.1);
@@ -2220,6 +2274,14 @@ body::before {
 @media (max-width: 600px) {
     body {
         padding: 10px;
+        overflow-x: hidden;
+    }
+
+    #game-container {
+        gap: 12px;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
     }
 
     #board {
@@ -2467,5 +2529,35 @@ body::before {
         padding: 20px !important;
         max-width: 100% !important;
         width: 95% !important;
+    }
+    #kbd-shortcuts-modal > div h2 {
+        font-size: 18px !important;
+    }
+    #kbd-shortcuts-modal > div > div > div {
+        font-size: 13px !important;
+        padding: 6px 8px !important;
+    }
+
+    /* Scoring totals */
+    #scoring-totals > div > div:first-child {
+        font-size: 10px !important;
+    }
+    #scoring-totals > div > div:last-child {
+        font-size: 28px !important;
+    }
+
+    /* Bag progress bar text */
+    .bag-label {
+        font-size: 11px;
+    }
+
+    /* Inventory area */
+    #inventory {
+        gap: 6px;
+    }
+    .bookmark-icon,
+    .sticker-badge {
+        font-size: 10px;
+        padding: 3px 6px;
     }
 }

@@ -139,6 +139,42 @@ export const achievements = [
         check(state, stats, context) { return state.combo >= 5; }},
     { id: 'combo_god', name: 'Combo God', desc: 'Reach a streak of 10', icon: '⚡',
         check(state, stats, context) { return state.combo >= 10; }},
+    // ── Score milestones ──────────────────────────────────────────────────
+    { id: 'total_score_10k', name: 'Scorekeeper', desc: 'Score 10,000 lifetime points', icon: '📊',
+        check(state, stats, context) { return (stats.totalScore || 0) >= 10000; }},
+    { id: 'total_score_100k', name: 'Score Legend', desc: 'Score 100,000 lifetime points', icon: '🏆',
+        check(state, stats, context) { return (stats.totalScore || 0) >= 100000; }},
+    { id: 'score_200', name: 'Big Turn', desc: 'Score 200+ in a single turn', icon: '🔥',
+        check(state, stats, context) { return (context.turnScore || 0) >= 200; }},
+    { id: 'score_1000', name: 'Mega Turn', desc: 'Score 1,000+ in a single turn', icon: '💥',
+        check(state, stats, context) { return (context.turnScore || 0) >= 1000; }},
+    // ── Word length ───────────────────────────────────────────────────────
+    { id: 'long_word_7', name: 'Long Words', desc: 'Submit a 7-letter word', icon: '📏',
+        check(state, stats, context) { return (stats.longestWordLen || 0) >= 7; }},
+    { id: 'long_word_10', name: 'Colossal', desc: 'Submit a 10+ letter word', icon: '🐘',
+        check(state, stats, context) { return (stats.longestWordLen || 0) >= 10; }},
+    // ── Efficiency ────────────────────────────────────────────────────────
+    { id: 'natural', name: 'Natural', desc: 'Win a round on the very first hand', icon: '🌱',
+        check(state, stats, context) { return context.roundWon && state.handsLeft >= 3; }},
+    // ── Combo / streak ────────────────────────────────────────────────────
+    { id: 'combo_legend', name: 'Combo Legend', desc: 'Reach a streak of 15', icon: '💫',
+        check(state, stats, context) { return state.combo >= 15; }},
+    { id: 'combo_mastery', name: 'Combo Mastery', desc: 'Reach a streak of 25', icon: '👑',
+        check(state, stats, context) { return state.combo >= 25; }},
+    // ── Bosses ────────────────────────────────────────────────────────────
+    { id: 'boss_rush', name: 'Boss Rush', desc: 'Defeat 3 or more bosses in one run', icon: '🗡️',
+        check(state, stats, context) { return (state.defeatedBosses || []).length >= 3; }},
+    // ── Economy ───────────────────────────────────────────────────────────
+    { id: 'rich_2000', name: 'Loaded', desc: 'Hold 2,000+ gold at once', icon: '🏦',
+        check(state, stats, context) { return state.gold >= 2000; }},
+    // ── Progression ───────────────────────────────────────────────────────
+    { id: 'eternal', name: 'Eternal', desc: 'Reach round 75', icon: '♾️',
+        check(state, stats, context) { return state.currentRound >= 75; }},
+    { id: 'bookmark_hoarder', name: 'Bookmark Hoarder', desc: 'Own 15+ bookmark types at once', icon: '📚',
+        check(state, stats, context) {
+            const bookmarks = state.inventory.filter(id => !id.startsWith('sticker_') && !id.startsWith('pack_') && id !== 'buy_letter');
+            return bookmarks.length >= 15;
+        }},
 ];
 
 let unlockedAchievements = [];
@@ -283,6 +319,19 @@ export function getAchievementProgress(achId) {
         case 'trifecta': return 'Win 3 rounds in one run';
         case 'combo_king': return 'Reach combo of 5';
         case 'combo_god': return 'Reach combo of 10';
+        case 'total_score_10k': return `${stats.totalScore || 0}/10000 score`;
+        case 'total_score_100k': return `${stats.totalScore || 0}/100000 score`;
+        case 'score_200': return 'Score 200+ in one turn';
+        case 'score_1000': return 'Score 1000+ in one turn';
+        case 'long_word_7': return `${stats.longestWordLen || 0}/7 letters`;
+        case 'long_word_10': return `${stats.longestWordLen || 0}/10 letters`;
+        case 'natural': return 'Win on the first hand';
+        case 'combo_legend': return 'Reach combo of 15';
+        case 'combo_mastery': return 'Reach combo of 25';
+        case 'boss_rush': return 'Defeat 3 bosses in one run';
+        case 'rich_2000': return 'Hold 2000+ gold';
+        case 'eternal': return `${stats.maxRound || 1}/75 rounds`;
+        case 'bookmark_hoarder': return 'Own 15+ bookmarks';
         default: return '';
     }
 }

@@ -197,7 +197,12 @@ function setupDictionarySearch() {
                     matchCount.title = `${matches.length} / ${totalDictSize} words (${matchPct}%)`;
                 }
 
-                results.innerHTML = matches.map(w => `<div title="${w.length} letters">${w}</div>`).join('');
+                // Build results header + word list
+                const headerHtml = `<div class="dict-results-header">
+                    <span class="dict-count-label">${matchLabel} matching words</span>
+                    <span class="dict-count-pct">${matchPct}% of dictionary</span>
+                </div>`;
+                results.innerHTML = headerHtml + matches.map(w => `<div title="${w.length} letters">${w}</div>`).join('');
             }
         }, 150);
     };

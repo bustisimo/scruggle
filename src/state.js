@@ -415,6 +415,7 @@ export const gameState = {
     board: Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null)),
     bag: [],
     hand: [],
+    discardPool: [],
     score: 0,
     gold: 0,
     inventory: [],
@@ -446,6 +447,7 @@ export function saveGame() {
         board: gameState.board,
         bag: gameState.bag,
         hand: gameState.hand,
+        discardPool: gameState.discardPool,
         score: gameState.score,
         gold: gameState.gold,
         inventory: gameState.inventory,
@@ -478,6 +480,7 @@ export function loadSavedGame() {
         gameState.board = data.board;
         gameState.bag = data.bag;
         gameState.hand = data.hand;
+        gameState.discardPool = data.discardPool || [];
         gameState.score = data.score || 0;
         gameState.gold = data.gold || 0;
         gameState.inventory = data.inventory || [];
@@ -508,9 +511,8 @@ export function deleteSavedGame() {
     localStorage.removeItem(SAVE_KEY);
 }
 
-// Removed unused swap cost logic - now based on bag capacity instead of discardsLeft
-export function getSwapCost() { return 0; // No longer tracking swap costs via discards
-}
+// Swap costs 1 discard per use
+export function getSwapCost() { return 1; }
 
 export function getEndlessTargetScore(round) {
     // ── Round scaling balance ─────────────────────────────────────────────

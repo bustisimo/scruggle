@@ -269,6 +269,7 @@ function initRound(isNewRun) {
     }
     gameState.handsLeft = 4;
     gameState.discardsLeft = 3;
+    gameState.discardPool = [];
 
     // Hoarder bookmark: +5 gold per round start
     if (gameState.inventory.includes('hoarder')) {
@@ -1248,8 +1249,10 @@ function setupEventListeners() {
     };
 
     document.getElementById('swap-btn').onclick = () => {
+        if (gameState.selectedHandIndices.size === 0) return;
+
         const swapCost = getSwapCost();
-        if (gameState.selectedHandIndices.size === 0 || (gameState.discardsLeft < swapCost && swapCost > 0)) return;
+        if (gameState.discardsLeft < swapCost) return;
 
         gameState.discardsLeft -= swapCost;
 
@@ -1262,12 +1265,16 @@ function setupEventListeners() {
         });
         gameState.selectedHandIndices.clear();
 
-        // Draw new tiles first before putting discarded ones back
+        // Fire Recycler bookmark: +1 gold per discarded tile
+        if (gameState.inventory.includes('recycler') && discardedTiles.length > 0) {
+            gameState.gold += discardedTiles.length;
+        }
+
+        // Draw replacement tiles
         drawTiles();
 
-        // Put discarded tiles back in bag and shuffle
-        gameState.bag.push(...discardedTiles);
-        shuffle(gameState.bag);
+        // Discarded tiles go into the discard pool — gone for the rest of the round
+        gameState.discardPool.push(...discardedTiles);
 
         // Combo reset — swapping tiles breaks the streak
         gameState.combo = 0;

@@ -11,6 +11,7 @@ import {
 import { openShop, buyItem } from './shop.js';
 import { loadAchievements, checkAchievements, getUnlockedCount } from './achievements.js';
 import { BOSSES, getBossForRound, applyBossReward } from './bosses.js';
+import { showScoringAnimation, closeScoringAnimation } from './scoring_animation.js';
 
 async function init() {
     loadAchievements();
@@ -506,7 +507,7 @@ function setupEventListeners() {
         startNewRun();
     };
 
-    document.getElementById('submit-btn').onclick = () => {
+    document.getElementById('submit-btn').onclick = async () => {
         const validation = validateBoard();
         if (!validation.allValid) {
             alert(validation.reason || "Invalid board placement.");
@@ -517,109 +518,116 @@ function setupEventListeners() {
         let turnScore = 0;
         let turnGold = 0;
         let turnWordsCount = 0;
-        let breakdownHTML = '';
+        const wordsData = [];
 
         words.forEach(w => {
             const hasNewTile = w.coords.some(c => !gameState.board[c.y][c.x].isLocked);
-            if (hasNewTile) {
-                turnWordsCount++;
-                let sumLetters = 0;
-                let wordMultiplier = 1;
-                let wordDetailsHTML = `<div style="border: 2px solid rgba(90,46,23,0.15); border-radius: 8px; padding: 12px; margin-bottom: 15px; background-color: rgba(255,255,255,0.3); font-family: 'Georgia', serif;">`;
-                wordDetailsHTML += `<h3 style="margin: 0 0 10px 0; color: var(--mahogany); display: flex; justify-content: space-between;">Word: <span style="font-size: 20px; font-weight: 900; letter-spacing: 1px;">${w.word}</span></h3>`;
+            if (!hasNewTile) return;
 
-                let lettersCalc = [];
-                let inksList = [];
-                let boardMultsList = [];
+            turnWordsCount++;
+            let sumLetters = 0;
+            let wordMultiplier = 1;
+            const tiles = [];
+            const bonusTexts = [];
 
-                w.coords.forEach(c => {
-                    const tile = gameState.board[c.y][c.x];
-                    let tileVal = tile.value;
-                    let initialVal = tileVal;
-                    let letterLabel = `<strong>${tile.letter}</strong> (${initialVal}`;
+            w.coords.forEach(c => {
+                const tile = gameState.board[c.y][c.x];
+                let tileVal = tile.value;
+                let multiplierBadge = null;
 
-                    if (tile.ink === 'fire') {
-                        tileVal *= 2;
-                        letterLabel += ` x2 Fire Ink = ${tileVal}`;
+                if (tile.ink === 'fire') {
+                    tileVal *= 2;
+                    bonusTexts.push('🔥 Fire x2');
+                }
+
+                if (!tile.isLocked) {
+                    const bonus = gameState.boardMultipliers[`${c.x},${c.y}`];
+                    let tileContribution = tileVal;
+
+                    if (bonus === 'DL') {
+                        tileContribution = tileVal * 2;
+                        multiplierBadge = 'DL';
+                    } else if (bonus === 'TL') {
+                        tileContribution = tileVal * 3;
+                        multiplierBadge = 'TL';
                     }
-                    letterLabel += `)`;
+                    sumLetters += tileContribution;
 
-                    if (!tile.isLocked) {
-                        const bonus = gameState.boardMultipliers[`${c.x},${c.y}`];
-                        let tileContribution = tileVal;
-
-                        if (bonus === 'DL') {
-                            tileContribution = tileVal * 2;
-                            boardMultsList.push(`${tile.letter} (DL multiplier: +${tileVal} pts)`);
-                        } else if (bonus === 'TL') {
-                            tileContribution = tileVal * 3;
-                            boardMultsList.push(`${tile.letter} (TL multiplier: +${tileVal * 2} pts)`);
-                        }
-                        sumLetters += tileContribution;
-
-                        if (bonus === 'DW') {
-                            wordMultiplier *= 2;
-                            boardMultsList.push(`DW multiplier (x2)`);
-                        } else if (bonus === 'TW') {
-                            wordMultiplier *= 3;
-                            boardMultsList.push(`TW multiplier (x3)`);
-                        } else if (bonus === 'QW') {
-                            wordMultiplier *= 4;
-                            boardMultsList.push(`QW multiplier (x4)`);
-                        }
-
-                        if (bonus === 'GM') {
-                            turnGold += tileVal;
-                            inksList.push(`GM Sticker (+${tileVal} Gold)`);
-                        }
-
-                        if (tile.ink === 'gold') {
-                            turnGold += 5;
-                            inksList.push(`Gold Ink (+5 Gold)`);
-                        }
-                        if (tile.ink === 'void') {
-                            turnScore += 15;
-                            inksList.push(`Void Ink (+15 Score)`);
-                        }
-                        if (tile.ink === 'prism') {
-                            wordMultiplier += 1;
-                            inksList.push(`Prism Ink (+1 Multiplier)`);
-                        }
-                    } else {
-                        sumLetters += tileVal;
+                    if (bonus === 'DW') {
+                        wordMultiplier *= 2;
+                        bonusTexts.push('📘 DW x2');
+                    } else if (bonus === 'TW') {
+                        wordMultiplier *= 3;
+                        bonusTexts.push('📗 TW x3');
+                    } else if (bonus === 'QW') {
+                        wordMultiplier *= 4;
+                        bonusTexts.push('📕 QW x4');
                     }
-                    lettersCalc.push(letterLabel);
+
+                    if (bonus === 'GM') {
+                        turnGold += tileVal;
+                        bonusTexts.push(`🪙 GM +${tileVal}`);
+                    }
+
+                    if (tile.ink === 'gold') {
+                        turnGold += 5;
+                        bonusTexts.push('✨ Gold +5');
+                    }
+                    if (tile.ink === 'void') {
+                        turnScore += 15;
+                        bonusTexts.push('💜 Void +15');
+                    }
+                    if (tile.ink === 'prism') {
+                        wordMultiplier += 1;
+                        bonusTexts.push('🌈 Prism +1x');
+                    }
+                } else {
+                    sumLetters += tileVal;
+                }
+
+                tiles.push({
+                    letter: tile.letter,
+                    value: tile.value,
+                    playedValue: tileVal,
+                    ink: tile.ink || null,
+                    multiplierBadge,
                 });
+            });
 
-                const finalWordScore = sumLetters * wordMultiplier;
-                wordDetailsHTML += `<div style="font-size: 14px; color: var(--tile-text); display: flex; flex-direction: column; gap: 5px;">`;
-                wordDetailsHTML += `<div><strong>Tile Values:</strong> ${lettersCalc.join(' + ')}</div>`;
+            const finalWordScore = sumLetters * wordMultiplier;
 
-                if (boardMultsList.length > 0) {
-                    wordDetailsHTML += `<div><strong>Board Multipliers:</strong> ${boardMultsList.join(', ')}</div>`;
-                }
-                if (inksList.length > 0) {
-                    wordDetailsHTML += `<div><strong>Ink & Sticker Bonuses:</strong> ${inksList.join(', ')}</div>`;
-                }
+            let wordGold = Math.floor(finalWordScore / 5);
+            const wordContext = { word: w.word, wordGold, finalWordScore };
+            triggerHook('onWordScored', wordContext);
+            wordGold = wordContext.wordGold;
 
-                wordDetailsHTML += `<div style="margin-top: 5px; border-top: 1px dashed rgba(90,46,23,0.1); padding-top: 5px;"><strong>Calculation:</strong> ${sumLetters} pts x ${wordMultiplier} word multiplier = <span style="font-weight: bold; color: var(--mahogany);">${finalWordScore} pts</span></div>`;
-
-                let wordGold = Math.floor(finalWordScore / 5);
-                wordDetailsHTML += `<div><strong>Base Gold:</strong> Math.floor(${finalWordScore} / 5) = +${wordGold} Gold</div>`;
-
-                const wordContext = { word: w.word, wordGold, finalWordScore };
-                triggerHook('onWordScored', wordContext);
-
-                if (wordContext.wordGold !== wordGold) {
-                    wordDetailsHTML += `<div style="color: #7b1fa2; font-weight: bold;"><strong>Bookmark Bonus:</strong> Word gold modified to +${wordContext.wordGold} Gold</div>`;
-                }
-
-                wordDetailsHTML += `</div></div>`;
-                breakdownHTML += wordDetailsHTML;
-
-                turnScore += finalWordScore;
-                turnGold += wordContext.wordGold;
+            // Build multiplier display text
+            let multiplierText = null;
+            if (wordMultiplier > 1) {
+                const sources = [];
+                w.coords.forEach(c => {
+                    if (!gameState.board[c.y][c.x].isLocked) {
+                        const b = gameState.boardMultipliers[`${c.x},${c.y}`];
+                        if (b === 'DW' || b === 'TW' || b === 'QW') sources.push(b);
+                    }
+                });
+                if (tiles.some(t => t.ink === 'prism')) sources.push('Prism');
+                multiplierText = sources.length > 0 ? `${wordMultiplier} (${sources.join('+')})` : `${wordMultiplier}`;
             }
+
+            wordsData.push({
+                word: w.word,
+                tiles,
+                letterSum: sumLetters,
+                wordMultiplier,
+                multiplierText,
+                wordScore: finalWordScore,
+                wordGold,
+                bonusTexts: bonusTexts.length > 0 ? bonusTexts : null,
+            });
+
+            turnScore += finalWordScore;
+            turnGold += wordGold;
         });
 
         const baseTurnScore = turnScore;
@@ -630,17 +638,23 @@ function setupEventListeners() {
         turnScore = turnContext.turnScore;
         turnGold = turnContext.turnGold;
 
+        // If bookmark triggers changed totals, add a summary card
         if (turnScore !== baseTurnScore || turnGold !== baseTurnGold) {
-            let turnDetailsHTML = `<div style="border: 2px solid #7b1fa2; border-radius: 8px; padding: 12px; margin-bottom: 15px; background-color: #f3e5f5; color: #4a148c; font-size: 14px; font-family: 'Georgia', serif;">`;
-            turnDetailsHTML += `<h3 style="margin: 0 0 8px 0; color: #7b1fa2;">Turn Bookmark Triggers</h3>`;
-            if (turnScore !== baseTurnScore) {
-                turnDetailsHTML += `<div><strong>Score:</strong> ${baseTurnScore} pts -> <span style="font-weight: bold;">${turnScore} pts</span> (+${turnScore - baseTurnScore} pts)</div>`;
+            const diffParts = [];
+            if (turnScore !== baseTurnScore) diffParts.push(`📊 Score +${turnScore - baseTurnScore}`);
+            if (turnGold !== baseTurnGold) diffParts.push(`🪙 Gold +${turnGold - baseTurnGold}`);
+            if (diffParts.length > 0) {
+                wordsData.push({
+                    word: 'Bookmarks',
+                    tiles: [],
+                    letterSum: 0,
+                    wordMultiplier: 1,
+                    multiplierText: null,
+                    wordScore: 0,
+                    wordGold: 0,
+                    bonusTexts: ['🔖 Bookmark Bonuses: ' + diffParts.join(', ')],
+                });
             }
-            if (turnGold !== baseTurnGold) {
-                turnDetailsHTML += `<div><strong>Gold:</strong> ${baseTurnGold} Gold -> <span style="font-weight: bold;">${turnGold} Gold</span> (+${turnGold - baseTurnGold} Gold)</div>`;
-            }
-            turnDetailsHTML += `</div>`;
-            breakdownHTML += turnDetailsHTML;
         }
 
         gameState.score += turnScore;
@@ -707,15 +721,14 @@ function setupEventListeners() {
             if (result.message) bossMessage = result.message;
         }
 
-        // Populate and display the breakdown modal
-        let content = breakdownHTML || '<div style="text-align: center; color: #aaa; padding: 20px 0;">No new words scored.</div>';
-        if (bossMessage) {
-            content = `<div style="border: 2px solid #e91e63; border-radius: 8px; padding: 10px; margin-bottom: 15px; background-color: rgba(233,30,99,0.1); color: #e91e63; font-weight: bold; font-family: 'Georgia', serif; font-size: 14px;">${bossMessage}</div>` + content;
+        // Show the scoring animation
+        if (wordsData.length > 0) {
+            await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null);
+        } else {
+            // No new words scored — skip animation
+            if (bossMessage) alert(bossMessage);
         }
-        document.getElementById('breakdown-details').innerHTML = content;
-        document.getElementById('breakdown-total-score').innerText = turnScore;
-        document.getElementById('breakdown-total-gold').innerText = turnGold;
-        document.getElementById('breakdown-modal').style.display = 'flex';
+        checkWinLoss();
     };
 
     document.getElementById('swap-btn').onclick = () => {
@@ -788,13 +801,37 @@ function setupEventListeners() {
         }
     };
 
-    const closeBreakdownBtn = document.getElementById('close-breakdown-btn');
-    if (closeBreakdownBtn) {
-        closeBreakdownBtn.onclick = () => {
-            document.getElementById('breakdown-modal').style.display = 'none';
-            checkWinLoss();
-        };
-    }
+    // Scoring animation continue button
+    document.getElementById('scoring-continue-btn').onclick = () => {
+        closeScoringAnimation();
+    };
+
+    // Inventory drawer
+    const invDrawer = document.getElementById('inventory-drawer');
+    document.getElementById('view-inv-btn').onclick = () => {
+        if (invDrawer) {
+            const itemsEl = document.getElementById('inventory-drawer-items');
+            itemsEl.innerHTML = '';
+            if (gameState.inventory.length === 0) {
+                itemsEl.innerHTML = '<div style="text-align: center; color: #888; padding: 30px 0; font-family: Georgia, serif;">Your inventory is empty. Visit the shop to buy items!</div>';
+            } else {
+                gameState.inventory.forEach((itemId) => {
+                    const item = shopItems.find(i => i.id === itemId);
+                    if (item) {
+                        const div = document.createElement('div');
+                        div.style.cssText = 'padding: 10px 12px; margin-bottom: 6px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 10px;';
+                        const icon = itemId.startsWith('sticker_') ? '🏷️' : itemId.startsWith('pack_') ? '🎨' : itemId === 'buy_letter' ? '📦' : '🔖';
+                        div.innerHTML = `<span style="font-size: 20px;">${icon}</span><div><div style="font-weight: bold; color: var(--parchment); font-size: 14px;">${item.name}</div><div style="color: #888; font-size: 11px;">${item.desc}</div></div>`;
+                        itemsEl.appendChild(div);
+                    }
+                });
+            }
+            invDrawer.classList.add('open');
+        }
+    };
+    document.getElementById('close-inv-btn').onclick = () => {
+        if (invDrawer) invDrawer.classList.remove('open');
+    };
 
     // Boss intro "Fight" button
     const bossFightBtn = document.getElementById('boss-intro-fight-btn');

@@ -376,6 +376,7 @@ function drawTiles() {
 function renderUI() {
     const prevScore = document.getElementById('score').innerText;
     const prevBag = document.getElementById('bag-count-badge').innerText;
+    const prevGold = document.getElementById('gold').innerText;
 
     document.getElementById('score').innerText = gameState.score;
     document.getElementById('gold').innerText = gameState.gold;
@@ -391,6 +392,14 @@ function renderUI() {
         scoreEl.classList.remove('score-pop');
         void scoreEl.offsetWidth;
         scoreEl.classList.add('score-pop');
+    }
+
+    // Gold pulse animation when gold changes
+    const goldEl = document.getElementById('gold');
+    if (prevGold !== '' + gameState.gold) {
+        goldEl.classList.remove('gold-pulse');
+        void goldEl.offsetWidth;
+        goldEl.classList.add('gold-pulse');
     }
 
     // Progress bar animation
@@ -478,6 +487,7 @@ function checkWinLoss() {
         saveGame();
         renderUI();
         document.getElementById('win-message').innerText = `Target reached! Bonus Gold: +${bonus}`;
+        spawnConfetti();
         document.getElementById('win-modal').style.display = 'flex';
 
         incrementWins();
@@ -492,6 +502,31 @@ function checkWinLoss() {
 }
 
 function setupEventListeners() {
+    // Theme toggle
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+        // Restore saved theme
+        const savedTheme = localStorage.getItem('scruggle_theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('theme-light');
+            themeBtn.innerText = '🌞 Light';
+        }
+        themeBtn.onclick = () => {
+            const isLight = document.body.classList.toggle('theme-light');
+            themeBtn.innerText = isLight ? '🌞 Light' : '🌓 Theme';
+            localStorage.setItem('scruggle_theme', isLight ? 'light' : 'dark');
+        };
+    }
+
+    // Start screen shortcuts button
+    const kbdStartBtn = document.getElementById('open-kbd-start-btn');
+    if (kbdStartBtn) {
+        kbdStartBtn.onclick = () => {
+            const kbdModal = document.getElementById('kbd-shortcuts-modal');
+            if (kbdModal) kbdModal.style.display = 'flex';
+        };
+    }
+
     // Menu Drawers
     const openStatsBtn = document.getElementById('open-stats-btn');
     const statsDrawer = document.getElementById('stats-drawer');
@@ -1314,6 +1349,41 @@ function requireAchievements() {
             } catch { return 0; }
         }
     };
+}
+
+function spawnConfetti() {
+    const container = document.getElementById('win-confetti-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const colors = ['#e91e63', '#ff5722', '#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#ff9800', '#00bcd4'];
+    const shapes = ['square', 'circle'];
+    for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size = 6 + Math.floor(Math.random() * 8);
+        const left = Math.random() * 100;
+        const duration = 1.2 + Math.random() * 1.5;
+        const delay = Math.random() * 0.8;
+        const spin = 180 + Math.floor(Math.random() * 720);
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        piece.style.cssText = `
+            left: ${left}%;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${color};
+            --duration: ${duration}s;
+            animation-delay: ${delay}s;
+            --spin: ${spin}deg;
+            border-radius: ${shape === 'circle' ? '50%' : '2px'};
+            box-shadow: 0 0 4px rgba(255,255,255,0.3);
+        `;
+        container.appendChild(piece);
+    }
+    // Clean up after animations complete
+    setTimeout(() => {
+        if (container) container.innerHTML = '';
+    }, 4000);
 }
 
 // Start the game!

@@ -7,12 +7,16 @@ export const BOSSES = {
         round: 3,
         emoji: '🦹',
         art: `
-   🦹
-  ╔═══╗
-  ║ 🖋 ║
-  ╚═══╝
-  /│\\
-  / \\
+      ╔══════════════════╗
+      ║     ༺🦹༻        ║
+      ║   ╔═══════════╗  ║
+      ║   ║  ⚫  🖋 ⚫  ║  ║
+      ║   ║ 🖌️✂️📄🖋  ║  ║
+      ║   ╚═══════════╝  ║
+      ║    ╱│╲    ╱│╲    ║
+      ║   ╱ │ ╲  ╱ │ ╲   ║
+      ║     │    ╱  │     ║
+      ╚══════════════════╝
   `,
         introText: 'The Ink Thief snatches tiles from your hand after each submission!',
         rules: [
@@ -48,12 +52,16 @@ export const BOSSES = {
         round: 6,
         emoji: '🐛',
         art: `
-    🐛
-  ╭───╮
-  │ 📖 │
-  ╰───╯
-   /||\\
-    /\\
+      ╔══════════════════╗
+      ║    ༺🐛༻        ║
+      ║   ╔═══════════╗  ║
+      ║   ║  📖📚📖   ║  ║
+      ║   ║  🅰🅱🅲   ║  ║
+      ║   ╚═══════════╝  ║
+      ║   ╱╲      ╱╲     ║
+      ║  ╱  ╲    ╱  ╲    ║
+      ║ ╱    ╲  ╱    ╲   ║
+      ╚══════════════════╝
   `,
         introText: 'The Word Eater devours words of 4+ letters — those tiles are gone forever!',
         rules: [
@@ -91,12 +99,16 @@ export const BOSSES = {
         round: 9,
         emoji: '🗿',
         art: `
-    🗿💰🗿
-   ╔═════╗
-   ║ 💎  ║
-   ╚═════╝
-    /|||\\
-     /  \\
+      ╔══════════════════╗
+      ║    ༺🗿༻        ║
+      ║  ╔════════════╗  ║
+      ║  ║  💰  💎  💰  ║  ║
+      ║  ║  🪙✨🪙   ║  ║
+      ║  ╚════════════╝  ║
+      ║  ╱||╲    ╱||╲   ║
+      ║ ╱ │ ╲  ╱ │ ╲    ║
+      ║   │   ╱  │      ║
+      ╚══════════════════╝
   `,
         introText: 'The Gilded Golem raises the stakes — target is 1.5x higher, but all gold earnings are doubled!',
         rules: [
@@ -119,12 +131,16 @@ export const BOSSES = {
         round: 12,
         emoji: '⏳',
         art: `
-    ⏳
-  ╔═════╗
-  ║ ⌛  ║
-  ╚═════╝
-   /|||\\
-    / \\
+      ╔══════════════════╗
+      ║    ༺⏳༻        ║
+      ║  ╔════════════╗  ║
+      ║  ║ ◀  ⌛  ▶  ║  ║
+      ║  ║  ⏰⏳⏰   ║  ║
+      ║  ╚════════════╝  ║
+      ║  ╱||╲    ╱||╲   ║
+      ║ ╱ │ ╲  ╱ │ ╲    ║
+      ║   │   ╱  │      ║
+      ╚══════════════════╝
   `,
         introText: 'The Time Warp distorts time itself — fewer moves, but every gold find is tripled!',
         rules: [
@@ -147,12 +163,16 @@ export const BOSSES = {
         round: 15,
         emoji: '🪞',
         art: `
-    🪞
-  ╔═════╗
-  ║ 🃏 ║
-  ╚═════╝
-   /|||\\
-    / \\
+      ╔══════════════════╗
+      ║    ༺🪞༻        ║
+      ║  ╔════════════╗  ║
+      ║  ║  🃏  ☯  🃏 ║  ║
+      ║  ║  ⚪⬛⚪   ║  ║
+      ║  ╚════════════╝  ║
+      ║  ╱||╲    ╱||╲   ║
+      ║ ╱ │ ╲  ╱ │ ╲    ║
+      ║   │   ╱  │      ║
+      ╚══════════════════╝
   `,
         introText: 'The Mirror reflects your every move! Placed tiles appear mirrored on the opposite side of the board.',
         rules: [
@@ -192,12 +212,16 @@ export const BOSSES = {
         round: 18,
         emoji: '🕳️',
         art: `
-    🕳️
-  ╔═════╗
-  ║ ∞  ║
-  ╚═════╝
-   /|||\\
-    / \\
+      ╔══════════════════╗
+      ║    ༺🕳️༻       ║
+      ║  ╔════════════╗  ║
+      ║  ║  🌌  ∞  🌌 ║  ║
+      ║  ║  ⚫⬛⚫   ║  ║
+      ║  ╚════════════╝  ║
+      ║  ╱││╲    ╱││╲   ║
+      ║ ╱ │ ╲  ╱ │ ╲    ║
+      ║   │   ╱  │      ║
+      ╚══════════════════╝
   `,
         introText: 'The Void consumes everything — each submission devours all placed tiles forever, but the target is lower.',
         rules: [

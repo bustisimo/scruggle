@@ -1,4 +1,4 @@
-import { gameState, GRID_SIZE, shopItems, shuffle } from './state.js';
+import { gameState, GRID_SIZE, shopItems, shuffle, FONT_BAGS } from './state.js';
 import { validateBoard } from './rules.js';
 
 export function renderInventory() {
@@ -432,6 +432,15 @@ export function renderBagDrawer() {
     // ── Letter distribution summary (compact A-Z grid) ───────────────────
     const letterCounts = computeBagLetterCounts();
     const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+    // Total tile counter
+    const totalEl = document.createElement('div');
+    totalEl.className = 'bag-drawer-total';
+    const remaining = gameState.bag.length;
+    const activeBag = FONT_BAGS[gameState.selectedFontBagId || 'standard'] || FONT_BAGS.standard;
+    const totalTiles = Object.values(activeBag.distribution).reduce((s, d) => s + d.count, 0);
+    totalEl.innerHTML = `<span class="bag-drawer-total-count">${remaining}</span> / ${totalTiles} tiles remaining`;
+    container.appendChild(totalEl);
 
     const summaryEl = document.createElement('div');
     summaryEl.className = 'bag-letter-summary';

@@ -533,6 +533,10 @@ function renderUI() {
             void bagCountBadge.offsetWidth;
             bagCountBadge.classList.add('bag-pulse');
         }
+        // Set tooltip with distribution
+        const badgeCounts = computeBagLetterCounts();
+        const badgeTooltip = buildBagDistributionText(badgeCounts);
+        bagCountBadge.title = badgeTooltip || 'Bag is empty';
     }
 
     renderInventory();

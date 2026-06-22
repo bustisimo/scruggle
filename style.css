@@ -384,6 +384,7 @@ body.theme-light {
     line-height: 1;
     pointer-events: none;
     z-index: 2;
+    color: #4caf50; /* default: green for plentiful */
 }
 .hand-bag-remaining[data-count="0"],
 .hand-bag-remaining[data-count="1"] {
@@ -396,12 +397,6 @@ body.theme-light {
 .hand-bag-remaining[data-count="4"],
 .hand-bag-remaining[data-count="5"] {
     color: #81c784;
-}
-.hand-bag-remaining[data-count^="6"],
-.hand-bag-remaining[data-count^="7"],
-.hand-bag-remaining[data-count^="8"],
-.hand-bag-remaining[data-count^="9"] {
-    color: #4caf50;
 }
 
 /* Bag info & progress bar */
@@ -771,8 +766,20 @@ button:disabled {
     background: rgba(255,255,255,0.1);
 }
 .bag-letter-cell.bag-letter-zero {
-    opacity: 0.25;
-    color: #666;
+    opacity: 0.2;
+    color: #555;
+    cursor: default;
+}
+.bag-letter-cell.bag-letter-zero:hover {
+    background: rgba(255,255,255,0.04);
+}
+.bag-letter-cell.bag-letter-zero::after {
+    content: '✗';
+    font-size: 8px;
+    color: #c62828;
+    line-height: 0;
+    position: relative;
+    top: -3px;
 }
 .bag-letter-count {
     font-size: 13px;
@@ -786,6 +793,20 @@ button:disabled {
     border: none;
     border-top: 1px solid rgba(253,250,242,0.1);
     margin: 10px 0;
+}
+.bag-drawer-total {
+    text-align: center;
+    font-size: 14px;
+    color: var(--parchment);
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+}
+.bag-drawer-total-count {
+    font-size: 20px;
+    font-weight: 900;
+    color: #4caf50;
 }
 .bag-drawer-section-label {
     font-size: 11px;

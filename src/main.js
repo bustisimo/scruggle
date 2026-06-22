@@ -1382,6 +1382,13 @@ function setupEventListeners() {
                 e.preventDefault();
                 return;
             }
+            // If scoring animation is showing, close it properly
+            const scoring = document.getElementById('scoring-animation');
+            if (scoring && scoring.style.display !== 'none') {
+                closeScoringAnimation();
+                e.preventDefault();
+                return;
+            }
             if (gameVisible) {
                 closeAllModalsAndDrawers();
                 e.preventDefault();
@@ -1389,15 +1396,15 @@ function setupEventListeners() {
             return;
         }
 
-        // Only game shortcuts apply when game container is visible
-        if (!gameVisible) return;
-
-        // ? — open keyboard shortcuts help
-        if (key === '?') {
+        // ? — open keyboard shortcuts help (works from start screen AND game)
+        if (key === '?' || key === '/') {
             openKbdModal();
             e.preventDefault();
             return;
         }
+
+        // Only game shortcuts apply when game container is visible
+        if (!gameVisible) return;
 
         // Tab: cycle through hand tiles
         if (key === 'Tab') {

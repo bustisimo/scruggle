@@ -178,6 +178,13 @@ export function renderStatsDrawer() {
     if (!historyEl) return;
 
     const history = stats.submissionHistory || [];
+
+    // Update history count badge
+    const historyCountEl = document.getElementById('history-count');
+    if (historyCountEl) {
+        historyCountEl.innerText = history.length > 0 ? `(${history.length})` : '';
+    }
+
     if (history.length === 0) {
         historyEl.innerHTML = '<div class="history-empty">No submissions yet. Start a game!</div>';
         return;

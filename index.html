@@ -199,7 +199,8 @@
         <h3>Your Legacy Stats</h3>
         <button id="close-stats-btn" class="close-drawer-btn">&times;</button>
     </div>
-    <div class="stats-card" style="margin-top: 0; background: none; border: none; padding: 0;">
+    <div class="stats-section">
+        <h4 class="stats-section-title">Lifetime Totals</h4>
         <div class="legacy-stat">
             <span style="color: var(--parchment)">Highest Round Reached:</span>
             <span id="stat-highest-round" class="stat-val" style="color: var(--parchment)">1</span>
@@ -211,6 +212,39 @@
         <div class="legacy-stat">
             <span style="color: var(--parchment)">Total Words Submitted:</span>
             <span id="stat-total-words" class="stat-val" style="color: #03a9f4;">0</span>
+        </div>
+        <div class="legacy-stat">
+            <span style="color: var(--parchment)">Total Submissions:</span>
+            <span id="stat-total-submissions" class="stat-val" style="color: #b39ddb;">0</span>
+        </div>
+        <div class="legacy-stat">
+            <span style="color: var(--parchment)">Avg Score / Word:</span>
+            <span id="stat-avg-score" class="stat-val" style="color: #81c784;">0</span>
+        </div>
+    </div>
+
+    <div class="stats-section">
+        <h4 class="stats-section-title">Personal Bests</h4>
+        <div class="legacy-stat">
+            <span style="color: #ffd700;">🏆 Best Scoring Word:</span>
+            <span class="stat-val" style="color: #ffd700; font-size: 14px;"><span id="stat-best-score-word">—</span> (+<span id="stat-best-score-val">0</span>)</span>
+        </div>
+        <div class="legacy-stat">
+            <span style="color: #ff9800;">🪙 Most Gold From Word:</span>
+            <span class="stat-val" style="color: #ff9800; font-size: 14px;"><span id="stat-best-gold-word">—</span> (🪙<span id="stat-best-gold-val">0</span>)</span>
+        </div>
+        <div class="legacy-stat">
+            <span style="color: #4caf50;">📏 Longest Word:</span>
+            <span class="stat-val" style="color: #4caf50; font-size: 14px;"><span id="stat-longest-word">—</span> (<span id="stat-longest-word-len">0</span>)</span>
+        </div>
+    </div>
+
+    <div class="stats-section">
+        <h4 class="stats-section-title">Submission History
+            <span id="history-count" style="font-weight: normal; font-size: 12px; opacity: 0.6;"></span>
+        </h4>
+        <div id="submission-history" class="history-list">
+            <div class="history-empty">No submissions yet. Start a game!</div>
         </div>
     </div>
 </div>

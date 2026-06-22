@@ -3,7 +3,7 @@ import {
     saveGame, loadSavedGame, deleteSavedGame, FONT_BAGS, triggerHook, shuffle, getSwapCost,
     getEndlessTargetScore, getEndlessHandSize, bookmarksRegistry
 } from './state.js';
-import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, getTitleEmoji } from './stats.js';
+import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, getTitleEmoji, recordSubmission, renderStatsDrawer } from './stats.js';
 import { loadDictionary, validateBoard, findWords } from './rules.js';
 import {
     renderInventory, renderBoard, renderHand, handleBoardClick,
@@ -591,7 +591,10 @@ function setupEventListeners() {
     }
 
     if (openStatsBtn && statsDrawer) {
-        openStatsBtn.onclick = () => openDrawer(statsDrawer);
+        openStatsBtn.onclick = () => {
+            renderStatsDrawer();
+            openDrawer(statsDrawer);
+        };
     }
     if (closeStatsBtn && statsDrawer) {
         closeStatsBtn.onclick = () => closeDrawer(statsDrawer);
@@ -871,6 +874,10 @@ function setupEventListeners() {
         }
 
         updateStats(gameState.currentRound, turnGold, turnWordsCount);
+
+        // Record submission history
+        const handNum = 4 - gameState.handsLeft;
+        recordSubmission(wordsData, gameState.currentRound, handNum);
 
         // Track cumulative ink types and bookmark types used
         const curStats = getStats();

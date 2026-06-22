@@ -1045,6 +1045,116 @@ button:disabled {
     color: var(--tile-text);
 }
 
+/* ── Stats drawer sections ────────────────────── */
+.stats-section {
+    margin-bottom: 22px;
+    border-bottom: 1px solid rgba(253, 250, 242, 0.08);
+    padding-bottom: 18px;
+}
+
+.stats-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.stats-section-title {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: bold;
+    color: #bcaaa4;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'Georgia', serif;
+    border-bottom: 1px solid rgba(253, 250, 242, 0.06);
+    padding-bottom: 8px;
+}
+
+/* ── Submission History ───────────────────────── */
+.history-list {
+    max-height: 320px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 5px;
+}
+.history-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+}
+.history-list::-webkit-scrollbar-thumb {
+    background: rgba(253,250,242,0.2);
+    border-radius: 3px;
+}
+
+.history-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+    font-family: 'Georgia', serif;
+    transition: background 0.15s;
+}
+
+.history-entry:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+.history-word {
+    flex: 1;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    color: var(--parchment);
+}
+
+.history-word.med {
+    color: #aed581;
+}
+
+.history-word.long {
+    color: #4caf50;
+}
+
+.history-score {
+    font-weight: bold;
+    color: #66bb6a;
+    min-width: 40px;
+    text-align: right;
+    font-size: 13px;
+}
+
+.history-gold {
+    color: #ffd700;
+    font-size: 12px;
+    min-width: 40px;
+    text-align: right;
+}
+
+.history-round {
+    color: #78909c;
+    font-size: 11px;
+    min-width: 40px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.history-empty {
+    text-align: center;
+    color: #666;
+    padding: 30px 0;
+    font-style: italic;
+    font-size: 13px;
+    font-family: 'Georgia', serif;
+}
+
 #font-bag-selector {
     margin-bottom: 35px;
     text-align: left;

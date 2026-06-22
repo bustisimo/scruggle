@@ -269,6 +269,13 @@ export const bookmarksRegistry = {
                 }
             }
         }
+    },
+    'combo_master': {
+        id: 'combo_master',
+        name: 'Combo Master',
+        desc: 'Doubles the bonus score earned from your combo/streak.',
+        price: 25,
+        hooks: {}
     }
 };
 
@@ -344,7 +351,8 @@ export const gameState = {
     activeBoss: null,
     defeatedBosses: [],
     endlessNegativeCells: 0,
-    kbdFocusedHandIndex: -1
+    kbdFocusedHandIndex: -1,
+    combo: 0
 };
 
 export function saveGame() {
@@ -370,7 +378,8 @@ export function saveGame() {
         goldenTicket: gameState.goldenTicket,
         activeBoss: gameState.activeBoss,
         defeatedBosses: gameState.defeatedBosses,
-        endlessNegativeCells: gameState.endlessNegativeCells
+        endlessNegativeCells: gameState.endlessNegativeCells,
+        combo: gameState.combo
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
@@ -402,6 +411,7 @@ export function loadSavedGame() {
         gameState.activeBoss = data.activeBoss || null;
         gameState.defeatedBosses = data.defeatedBosses || [];
         gameState.endlessNegativeCells = data.endlessNegativeCells || 0;
+        gameState.combo = data.combo || 0;
         return true;
     } catch (e) {
         return false;

@@ -188,6 +188,7 @@ function setupDictionarySearch() {
 
 function initRound(isNewRun) {
     gameState.score = 0;
+    gameState.combo = 0;
     if (isNewRun) {
         gameState.gold = 0;
         gameState.inventory = [];
@@ -385,6 +386,21 @@ function renderUI() {
     document.getElementById('target').innerText = gameState.targetScore;
     document.getElementById('hands').innerText = gameState.handsLeft;
     document.getElementById('discards').innerText = gameState.discardsLeft;
+
+    // Combo display
+    const comboDisplay = document.getElementById('combo-display');
+    const comboCount = document.getElementById('combo-count');
+    if (gameState.combo > 0) {
+        comboDisplay.style.display = 'flex';
+        comboCount.innerText = gameState.combo;
+        comboDisplay.classList.add('combo-active');
+        // Fire emoji count scales with combo level
+        const fires = gameState.combo >= 5 ? '🔥🔥🔥' : gameState.combo >= 3 ? '🔥🔥' : '🔥';
+        comboDisplay.querySelector('.combo-fire').innerText = fires;
+    } else {
+        comboDisplay.style.display = 'none';
+        comboDisplay.classList.remove('combo-active');
+    }
 
     // Score pop animation when score changes
     const scoreEl = document.getElementById('score');
@@ -805,10 +821,21 @@ function setupEventListeners() {
         turnScore = turnContext.turnScore;
         turnGold = turnContext.turnGold;
 
+        // ── Combo / Streak Bonus ─────────────────────────────────────
+        const baseComboLevel = gameState.combo;
+        const comboMult = gameState.inventory.includes('combo_master') ? 2 : 1;
+        const comboBonus = baseComboLevel * comboMult;
+        if (comboBonus > 0) {
+            turnScore += comboBonus;
+        }
+        gameState.combo++;
+        // ─────────────────────────────────────────────────────────────
+
         // If bookmark triggers changed totals, add a summary card
         if (turnScore !== baseTurnScore || turnGold !== baseTurnGold) {
             const diffParts = [];
-            if (turnScore !== baseTurnScore) diffParts.push(`📊 Score +${turnScore - baseTurnScore}`);
+            if (comboBonus > 0) diffParts.push(`🔥 Combo +${comboBonus}`);
+            if (turnScore - baseTurnScore - comboBonus > 0) diffParts.push(`📊 Score +${turnScore - baseTurnScore - comboBonus}`);
             if (turnGold !== baseTurnGold) diffParts.push(`🪙 Gold +${turnGold - baseTurnGold}`);
             if (diffParts.length > 0) {
                 wordsData.push({
@@ -948,7 +975,7 @@ function setupEventListeners() {
 
         // Show the scoring animation
         if (wordsData.length > 0) {
-            await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null);
+            await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null, baseComboLevel);
             // Flash scored tiles after animation closes
             const scoredTiles = document.querySelectorAll('#board .tile.locked');
             if (scoredTiles.length > 0) {
@@ -987,6 +1014,9 @@ function setupEventListeners() {
         // Put discarded tiles back in bag and shuffle
         gameState.bag.push(...discardedTiles);
         shuffle(gameState.bag);
+
+        // Combo reset — swapping tiles breaks the streak
+        gameState.combo = 0;
 
         saveGame();
         renderUI();

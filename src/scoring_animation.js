@@ -15,8 +15,9 @@ let currentAnimationResolve = null;
  * @param {number} turnScore - Total score for the turn
  * @param {number} turnGold - Total gold for the turn
  * @param {string|null} bossMessage - Optional boss mechanic message
+ * @param {number} [comboLevel] - Current combo streak level (0 if none)
  */
-export function showScoringAnimation(wordsData, turnScore, turnGold, bossMessage) {
+export function showScoringAnimation(wordsData, turnScore, turnGold, bossMessage, comboLevel) {
     return new Promise((resolve) => {
         currentAnimationResolve = resolve;
 
@@ -42,6 +43,18 @@ export function showScoringAnimation(wordsData, turnScore, turnGold, bossMessage
             bossMsgEl.style.display = 'block';
         } else {
             bossMsgEl.style.display = 'none';
+        }
+
+        // Combo badge
+        const existingComboBadge = document.getElementById('scoring-combo-badge');
+        if (existingComboBadge) existingComboBadge.remove();
+        if (comboLevel > 0) {
+            const comboBadge = document.createElement('div');
+            comboBadge.id = 'scoring-combo-badge';
+            comboBadge.className = 'scoring-combo-badge';
+            const fires = comboLevel >= 5 ? '🔥🔥🔥' : comboLevel >= 3 ? '🔥🔥' : '🔥';
+            comboBadge.innerHTML = `${fires} Combo x${comboLevel}`;
+            container.parentNode.insertBefore(comboBadge, container);
         }
 
         // Show overlay

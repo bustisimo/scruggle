@@ -49,8 +49,6 @@ function renderTitleTiles() {
             const tile = { letter, value: val, ink };
             const tileEl = createTileUI(tile);
             tileEl.classList.add('title-tile');
-            const rot = (Math.random() * 6 - 3).toFixed(1);
-            tileEl.style.transform += ` rotate(${rot}deg)`;
 
             // HTML5 Drag and Drop for playful rearranging
             tileEl.setAttribute('draggable', 'true');

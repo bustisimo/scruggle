@@ -1068,10 +1068,11 @@ function setupEventListeners() {
             document.getElementById('boss-intro-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
 
-            const boss = BOSSES[gameState.activeBoss];
-            if (boss && boss.onBossStart) {
-                boss.onBossStart(gameState);
-            }
+            // NOTE: boss.onBossStart() is NOT called here because it was
+            // already called in initRound() before showBossIntro(). Calling
+            // it again would double-apply state changes (e.g. Gilded Golem
+            // would multiply target by 1.5x twice = 2.25x total). This was
+            // a bug — see the initRound function for the single call.
             renderUI();
         };
     }

@@ -105,6 +105,20 @@ export const FONT_BAGS = {
 };
 
 export const bookmarksRegistry = {
+    // ── Bookmark pricing & gold economy ───────────────────────────────────
+    // Gold earned per submission ~ Math.floor(wordScore / 5).
+    // Typical earnings: 3-6 gold/turn, ~12-24 gold/round.
+    // By round 5 a player has earned ~60-120 gold total.
+    //
+    // Price tiers:
+    //   15g (Focus):        Cheap starter. Pays for itself in ~2 rounds.
+    //   20g (Hoarder/Recycler):  Early-mid. Pays off in 4-7 rounds.
+    //   25g (Efficiency/Alchemist):  Mid-tier. Requires ~3-6 rounds to recoup.
+    //   30g (Touch/Patience/Arch):   Requires specific play to earn back.
+    //   35g (Collector/Capitalist):  Late-game compounding investments.
+    //   40g (Scholar):      High ceiling — 2x gold on long words.
+    //   45g (Lucky Seven):  Luxury — very rare 7-letter payoff.
+    // ──────────────────────────────────────────────────────────────────────
     'focus': {
         id: 'focus',
         name: 'Focus',
@@ -119,11 +133,19 @@ export const bookmarksRegistry = {
     'efficiency': {
         id: 'efficiency',
         name: 'Efficiency',
-        desc: 'Swapping tiles now costs 0 discards (Free).',
+        // NOTE: Originally "swaps cost 0 discards" — but getSwapCost() returns
+        // 0 by default (discards were removed from the swap system). That made
+        // this bookmark a complete no-op. Reworked to a useful effect:
+        // +2 gold per word scored.
+        // Gold economy: ~4 submissions/round × 1-2 words each = 4-8 extra gold
+        // per round. At 25g, pays for itself in 3-6 rounds of normal play.
+        // Compare Focus (15g, +2/turn) — Efficiency is more expensive but
+        // triggers per-word instead of per-turn, rewarding multi-word crosses.
+        desc: 'Each word scores +2 Gold.',
         price: 25,
         hooks: {
-            onSwapTiles(state, context) {
-                context.cost = 0;
+            onWordScored(state, context) {
+                context.wordGold += 2;
             }
         }
     },
@@ -256,9 +278,20 @@ export const shopItems = [
     { id: 'pack_ice', name: 'Ice Ink Pack', desc: 'Apply Ice Ink to 3 random tiles in your bag. Ice Ink tiles remain unlocked on submission, then melt.', price: 15 },
     { id: 'pack_gold', name: 'Gold Ink Pack', desc: 'Apply Gold Ink to 2 random tiles in your bag. Gold Ink yields +5 Gold when scored.', price: 20 },
     { id: 'pack_void', name: 'Void Ink Pack', desc: 'Apply Void Ink to 2 random tiles in your bag. Void Ink adds +15 Score, but disintegrates the tile after scoring.', price: 20 },
-    { id: 'pack_growth', name: 'Growth Ink Pack', desc: 'Apply Growth Ink to 2 random tiles in your bag. Growth tiles permanently gain +1 value whenever scored.', price: 20 },
-    { id: 'pack_steel', name: 'Steel Ink Pack', desc: 'Apply Steel Ink to 2 random tiles in your bag. Steel tiles remain on the board and stay unlocked forever, retaining Steel Ink.', price: 20 },
-    { id: 'pack_prism', name: 'Prism Ink Pack', desc: 'Apply Prism Ink to 2 random tiles in your bag. Prism tiles add +1 to the word multiplier when scored.', price: 25 },
+    // ── Ink pack price notes ──────────────────────────────────────────────
+    // Fire/Ice   15g × 3 tiles: cheap, moderate power. Fair.
+    // Gold/Void  20g × 2 tiles: one-shot bonuses (5g or 15 score). Fair.
+    // Growth     25g × 2 tiles: compounds infinitely (+1 value per use).
+    //   ↑ was 20g — compounding value is OP at that price.
+    // Steel      30g × 2 tiles: unlocked tiles stay on board forever.
+    //   ↑ was 20g — permanent board control is game-changing.
+    //   At 30g it competes with mid-range bookmarks; about right.
+    // Prism      30g × 2 tiles: +1 word multiplier (stacks).
+    //   ↑ was 25g — word mult stacking is top-tier. 30g mirrors its impact.
+    // ──────────────────────────────────────────────────────────────────────
+    { id: 'pack_growth', name: 'Growth Ink Pack', desc: 'Apply Growth Ink to 2 random tiles in your bag. Growth tiles permanently gain +1 value whenever scored.', price: 25 },
+    { id: 'pack_steel', name: 'Steel Ink Pack', desc: 'Apply Steel Ink to 2 random tiles in your bag. Steel tiles remain on the board and stay unlocked forever, retaining Steel Ink.', price: 30 },
+    { id: 'pack_prism', name: 'Prism Ink Pack', desc: 'Apply Prism Ink to 2 random tiles in your bag. Prism tiles add +1 to the word multiplier when scored.', price: 30 },
     { id: 'sticker_dl', name: 'DL Sticker', desc: 'Apply a Double Letter multiplier to any board cell.', price: 10 },
     { id: 'sticker_tl', name: 'TL Sticker', desc: 'Apply a Triple Letter multiplier to any board cell.', price: 15 },
     { id: 'sticker_dw', name: 'DW Sticker', desc: 'Apply a Double Word multiplier to any board cell.', price: 15 },
@@ -384,8 +417,23 @@ export function getSwapCost() { return 0; // No longer tracking swap costs via d
 }
 
 export function getEndlessTargetScore(round) {
-    if (round < 21) return round * 30;
-    return Math.round(round * 35 + round * round * 1.5);
+    // ── Round scaling balance ─────────────────────────────────────────────
+    // Early (1-4): round*30 = 30-120. Gentle intro — one 4-5 letter word per
+    // hand (~30 pts) is enough. Players are learning.
+    //
+    // Mid (5-20): round*24+30. The old round*30 curve became punishing here:
+    //   Round 6 (Word Eater boss): 180 → 174 pts  (was punishing with 2-3 letter words)
+    //   Round 10:                 300 → 270 pts  (still challenging, needs 5-6 letter words or multipliers)
+    //   Round 15:                 450 → 390 pts  (bookmarks + inks should help by now)
+    // The gentler slope keeps the game winnable at higher rounds while still
+    // demanding competence — average hand needs ~45-65 pts with 4 submissions.
+    //
+    // Endless (21+): quadratic scaling with a gentler coefficient than the
+    // old formula. Gets brutal but rewards deep runs and smart ink use.
+    // ──────────────────────────────────────────────────────────────────────
+    if (round < 5) return round * 30;
+    if (round <= 20) return Math.floor(round * 24 + 30);
+    return Math.floor(round * 28 + round * round * 0.8);
 }
 
 export function getEndlessHandSize(round, baseHandSize) {

@@ -63,7 +63,18 @@ export const BOSSES = {
         ],
         reward: { type: 'hand_size', desc: 'Permanent Hand Size +1' },
         onBossStart(state) {
-            // No setup
+            // ── Word Eater target balance ────────────────────────────────
+            // This boss restricts submissions to 2-3 letter words — any word
+            // of 4+ letters is eaten (tiles lost forever). With only short
+            // words, typical scoring drops to ~10-20 pts per 3-letter word
+            // (with crosswords and multipliers, maybe 25-35 per hand).
+            //
+            // At round 6, without adjustment, target would be ~174 pts.
+            // With 4 hands × 30 pts avg = 120 pts — short by ~54 pts.
+            // Reducing target by 30% brings it to ~122 pts, achievable
+            // with good crosswords, board multipliers, and locked tiles.
+            // ──────────────────────────────────────────────────────────────
+            state.targetScore = Math.ceil(state.targetScore * 0.7);
         },
         onSubmission(state) {
             // Return empty — the "eaten" logic is in main.js where we check word length

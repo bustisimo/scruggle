@@ -504,7 +504,33 @@ function renderUI() {
     fill.dataset.prevPct = pct;
     // Pulse when near target (75%+)
     fill.classList.toggle('high-pulse', pct >= 75 && pct < 100);
-    fill.classList.toggle('complete', pct >= 100);
+    const isComplete = pct >= 100;
+    const wasComplete = fill.classList.contains('complete');
+    fill.classList.toggle('complete', isComplete);
+    // Completion sparkle burst when first hitting 100%
+    if (isComplete && !wasComplete) {
+        const container = document.getElementById('progress-bar-container');
+        if (container) {
+            const starChars = ['✦', '★', '●', '⁕', '✧'];
+            for (let i = 0; i < 6; i++) {
+                const sp = document.createElement('div');
+                sp.style.cssText = `
+                    position: absolute;
+                    right: 0;
+                    top: ${-4 + Math.random() * 16}px;
+                    font-size: ${8 + Math.random() * 10}px;
+                    color: ${['#ffd700', '#fff176', '#ffeb3b', '#4caf50'][i % 4]};
+                    pointer-events: none;
+                    z-index: 10;
+                    animation: score-float-up 0.8s ease-out forwards;
+                    animation-delay: ${i * 0.06}s;
+                `;
+                sp.innerText = starChars[i % starChars.length];
+                container.appendChild(sp);
+                setTimeout(() => sp.remove(), 1200);
+            }
+        }
+    }
 
     // Progress bar milestone diamond markers at 25/50/75/100%
     const container = document.getElementById('progress-bar-container');
@@ -537,11 +563,31 @@ function renderUI() {
                 d.classList.add('reached', 'pop');
                 if (pct >= 100) d.classList.add('complete');
                 setTimeout(() => d.classList.remove('pop'), 500);
+                // Chunk ripple effect on the progress bar at the crossed position
+                fill.classList.remove('chunk-ripple');
+                void fill.offsetWidth;
+                fill.classList.add('chunk-ripple');
+                setTimeout(() => fill.classList.remove('chunk-ripple'), 600);
+                // Scoreboard ripple effect
+                const statsEl = document.getElementById('stats');
+                if (statsEl && milestoneVal < 100) {
+                    statsEl.classList.remove('scoreboard-ripple');
+                    void statsEl.offsetWidth;
+                    statsEl.classList.add('scoreboard-ripple');
+                    setTimeout(() => statsEl.classList.remove('scoreboard-ripple'), 700);
+                }
             } else if (isReached) {
                 d.classList.add('reached');
-                if (pct >= 100) d.classList.add('complete');
+                if (pct >= 100) {
+                    d.classList.add('complete');
+                    // Completion zap effect — single pulse when first reaching 100%
+                    if (!fill.dataset.zapTriggered) {
+                        fill.dataset.zapTriggered = '1';
+                    }
+                }
             } else {
                 d.classList.remove('reached', 'complete');
+                fill.dataset.zapTriggered = '0';
             }
         });
     }
@@ -829,6 +875,13 @@ function setupEventListeners() {
             boardEl.classList.remove('board-shake', 'board-shake-enhanced');
             void boardEl.offsetWidth;
             boardEl.classList.add('board-shake', 'board-shake-enhanced');
+            // Add camera jitter to game container
+            const container = document.getElementById('game-container');
+            if (container) {
+                container.classList.remove('camera-shake');
+                void container.offsetWidth;
+                container.classList.add('camera-shake');
+            }
             // Remove any existing flash overlay
             const existingFlash = document.querySelector('.shake-flash-overlay');
             if (existingFlash) existingFlash.remove();
@@ -873,6 +926,8 @@ function setupEventListeners() {
                 boardEl.classList.remove('board-shake', 'board-shake-enhanced');
                 invalidTiles.forEach(el => el.classList.remove('invalid-shake'));
                 boardEl.querySelectorAll('.shake-particle').forEach(el => el.remove());
+                const container = document.getElementById('game-container');
+                if (container) container.classList.remove('camera-shake');
             }, 600);
             return;
         }

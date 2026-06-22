@@ -102,6 +102,8 @@ export function renderBoard(onCellClick, renderCallback) {
                         tile._animPlaced = true;
                         // Spawn burst particles around the tile
                         spawnPlaceParticles(tileEl);
+                        // Add lingering glow after bounce
+                        addPlacementGlow(tileEl);
                         // Ripple propagation — brief ring on adjacent empty cells
                         const neighbors = getNeighbors(x, y);
                         neighbors.forEach(n => {
@@ -324,13 +326,23 @@ export function renderHand(onTileClick, renderCallback) {
         // Animate tile sliding into hand from the side — only on first appearance
         if (!tile._animHandEnter) {
             tileEl.classList.add('hand-enter');
-            tileEl.style.animationDelay = `${index * 60}ms`;
+            // Fan direction based on position: first third left, middle center, last third right
+            const totalTiles = gameState.hand.length || 1;
+            const third = Math.floor(totalTiles / 3);
+            if (index < third) {
+                tileEl.classList.add('left-fan');
+            } else if (index >= totalTiles - third) {
+                tileEl.classList.add('right-fan');
+            } else {
+                tileEl.classList.add('center-fan');
+            }
+            tileEl.style.animationDelay = `${Math.abs(index - Math.floor(totalTiles / 2)) * 50}ms`;
             tile._animHandEnter = true;
             // Clean up animation class after it finishes
             setTimeout(() => {
-                tileEl.classList.remove('hand-enter');
+                tileEl.classList.remove('hand-enter', 'left-fan', 'center-fan', 'right-fan');
                 tileEl.style.animationDelay = '';
-            }, 500 + index * 60);
+            }, 700);
         }
         handEl.appendChild(tileEl);
     });
@@ -538,11 +550,12 @@ function spawnPlaceParticles(tileEl) {
     const cx = tileRect.left - boardRect.left + tileRect.width / 2;
     const cy = tileRect.top - boardRect.top + tileRect.height / 2;
     const colors = ['#4caf50', '#81c784', '#aed581', '#fdd835', '#ffab40'];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
         const p = document.createElement('div');
         p.className = 'tile-place-particle';
-        const angle = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.5;
-        const dist = 20 + Math.random() * 25;
+        if (i >= 4) p.classList.add('enhanced');
+        const angle = (Math.PI * 2 / 8) * i + (Math.random() - 0.5) * 0.5;
+        const dist = 20 + Math.random() * 28;
         const dx = Math.cos(angle) * dist;
         const dy = Math.sin(angle) * dist;
         const color = colors[i % colors.length];
@@ -550,6 +563,7 @@ function spawnPlaceParticles(tileEl) {
             left: ${cx}px;
             top: ${cy}px;
             background: ${color};
+            color: ${color};
             --tx: ${dx}px;
             --ty: ${dy}px;
         `;
@@ -564,35 +578,73 @@ function spawnPlaceParticles(tileEl) {
 }
 
 /**
- * Spawn floating sparkle particles around the center star cell.
- * Each render spawns 2 particles that drift upward and fade.
+ * Add a lingering green glow to newly placed tiles after the bounce animation.
  */
+function addPlacementGlow(tileEl) {
+    // Wait for bounce to finish, then add the lingering glow
+    setTimeout(() => {
+        tileEl.classList.add('tile-placed-glow');
+        setTimeout(() => {
+            tileEl.classList.remove('tile-placed-glow');
+        }, 1500);
+    }, 400);
+}
+
+/**
+ * Spawn floating sparkle particles around the center star cell.
+ * Also maintains persistent orbital particles in 3 rings.
+ */
+let _orbitalParticlesSpawned = false;
 function spawnCenterSparkles() {
     const boardEl = document.getElementById('board');
     if (!boardEl) return;
     const centerCell = boardEl.querySelector('.cell.center');
     if (!centerCell) return;
 
-    // Use a global counter to throttle — only add particles occasionally
-    window._sparkleCounter = (window._sparkleCounter || 0) + 1;
-    if (window._sparkleCounter % 3 !== 0) return; // Only spawn every 3rd render
+    // ── Spawn persistent orbital particles only once ──────
+    if (!_orbitalParticlesSpawned) {
+        _orbitalParticlesSpawned = true;
+        const orbitColors = [['#ffd700', '#fff8e1'], ['#4caf50', '#a5d6a7'], ['#fdd835', '#fff9c4']];
+        const orbitSpeeds = ['fast', '', 'slow'];
 
-    for (let i = 0; i < 2; i++) {
+        for (let ring = 0; ring < 3; ring++) {
+            const count = ring === 1 ? 3 : 4;
+            for (let i = 0; i < count; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'center-orbital-particle';
+                if (orbitSpeeds[ring]) orb.classList.add(orbitSpeeds[ring]);
+                const color = orbitColors[ring][i % 2];
+                orb.style.cssText = `
+                    background: ${color};
+                    box-shadow: 0 0 ${4 + ring * 2}px ${color};
+                    animation: ${ring === 1 ? 'center-particle-orbit-slow' : 'center-particle-orbit-fast'} ${2 + ring * 1.5}s linear infinite;
+                    animation-delay: ${i * (0.8 / count)}s;
+                `;
+                centerCell.appendChild(orb);
+            }
+        }
+    }
+
+    // ── Floating sparkle particles (every 3rd render, as before) ──
+    window._sparkleCounter = (window._sparkleCounter || 0) + 1;
+    if (window._sparkleCounter % 3 !== 0) return;
+
+    for (let i = 0; i < 3; i++) {
         const sparkle = document.createElement('div');
         sparkle.className = 'center-sparkle-particle';
-        // Random offset around the cell (within ±30px)
         const angle = Math.random() * Math.PI * 2;
         const dist = 10 + Math.random() * 25;
         const xOff = Math.cos(angle) * dist;
         const yOff = Math.sin(angle) * dist;
         const size = 3 + Math.random() * 5;
+        const hue = Math.random() > 0.5 ? 50 : 120;
         sparkle.style.cssText = `
             position: absolute;
             width: ${size}px;
             height: ${size}px;
             border-radius: 50%;
-            background: rgba(255, 215, 0, ${0.5 + Math.random() * 0.5});
-            box-shadow: 0 0 ${size * 2}px rgba(255, 215, 0, 0.4);
+            background: hsla(${hue}, 90%, 60%, ${0.4 + Math.random() * 0.5});
+            box-shadow: 0 0 ${size * 2}px hsla(${hue}, 90%, 60%, 0.3);
             left: calc(50% + ${xOff}px);
             top: calc(50% + ${yOff}px);
             z-index: 6;
@@ -600,7 +652,6 @@ function spawnCenterSparkles() {
             animation: center-particle-drift ${0.8 + Math.random() * 0.6}s ease-out forwards;
         `;
         centerCell.appendChild(sparkle);
-        // Remove after animation
         setTimeout(() => {
             if (sparkle.parentNode) sparkle.remove();
         }, 1600);

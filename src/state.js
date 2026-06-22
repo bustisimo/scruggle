@@ -326,6 +326,44 @@ export const shopItems = [
     //   Prism:  +1 word multiplier, stacks with other multipliers.
     //           ↑ was 25g — word mult stacking is top-tier. 30g right.
     //
+    // ── Void vs Steel vs Prism comparison ─────────────────────────
+    // All three are new-player traps in different ways, and that's
+    // intentional — they teach different playstyles through cost:
+    //
+    //   Void (20g/2 tiles):
+    //     One-shot 30pt burst. The tile is *consumed* — gone from
+    //     your bag forever. Net bag size shrinks over the run.
+    //     | Cost   | Benefit              | Duration  | Risk         |
+    //     | 10g/tile | +15 pts, tile lost  | one-shot  | Bag shrink  |
+    //     Best use: push over the target line when you're short.
+    //     Worst use: on rare letters (J/Q/X/Z) that you'd rather keep.
+    //
+    //   Steel (30g/2 tiles):
+    //     Tile stays on board unlocked forever. Every future hand,
+    //     that tile is pre-placed, saving you a tile placement and
+    //     acting as a permanent anchor for crosswords.
+    //     | Cost   | Benefit                | Duration | Risk        |
+    //     | 15g/tile | Permanent board tile | Forever  | Tile locked |
+    //     Best use: high-value consonants near center for repeated
+    //     crossword use (S, T, R, N). Worst use: on edge cells where
+    //     only 1-2 words can form.
+    //
+    //   Prism (30g/2 tiles):
+    //     Word mult +1 that stacks with board multipliers. A prism
+    //     on a DW cell gives 3×, on TW gives 4×. With 2 prisms
+    //     active, you get +2× per word.
+    //     | Cost   | Benefit           | Duration | Risk            |
+    //     | 15g/tile | +1 word mult    | Ongoing  | Needs scoring   |
+    //     Best use: pair with DW/TW cells for exponential returns.
+    //     Worst use: on tiles that rarely get scored.
+    //
+    //   TL;DR: Void = urgent burst (20g), Steel = board control
+    //   (30g), Prism = exponential scoring (30g). Void is cheaper
+    //   because it's self-destructive. Steel and Prism cost the
+    //   same but fill different roles — buy Steel for consistency,
+    //   Prism for combo potential.
+    // ──────────────────────────────────────────────────────────────
+    //
     // General rule: ink packs are consumable (tiles get locked/consumed),
     // while bookmarks are permanent upgrades. Ink packs at 15-30g should
     // feel like powerful one-round boosts; bookmarks at 15-45g are
@@ -465,42 +503,50 @@ export function getSwapCost() { return 0; // No longer tracking swap costs via d
 
 export function getEndlessTargetScore(round) {
     // ── Round scaling balance ─────────────────────────────────────────────
+    // Formula rationale:
+    //   Using `round × 30` everywhere would be punishing past round 5.
+    //   At round 10 that's 300 pts in 4 hands = 75 pts/hand. A competitive
+    //   crossword hand is ~40-60 pts; at 75 you'd need a bingo every hand.
+    //   Hence the gentler `round × 24 + 30` for rounds 5-20.
+    //
     // Formula:
-    //   Rounds 1-4:  round × 30    (gentle intro — 30, 60, 90, 120)
-    //   Rounds 5-20: round × 24 + 30 (steady climb — 150 → 510)
-    //   Rounds 21+:  round × 35 + r² × 1.5 (quadratic — brutal)
+    //   Rounds 1-4:  round × 30          (gentle intro — 30, 60, 90, 120)
+    //   Rounds 5-20: round × 24 + 30     (steady climb — 150 → 510)
+    //   Rounds 21+:  round × 35 + r² × 1.5 (quadratic — brutal endgame)
     //
-    // Per-hand scoring estimates (standard 7-tile hand):
-    //   Single 3-letter word:     12-20 pts  (no crosswords)
-    //   Single 4-letter word:     20-35 pts
-    //   Crossword (2 short words): 25-50 pts
-    //   Full hand use (bingo):    60-100+ pts (rare without inks)
+    // Per-hand scoring (standard 7-tile hand):
+    //   Single 3-letter word:       5-12 pts  (e.g. CAT=5, THE=6, JAB=12)
+    //   Single 4-letter word:       12-35 pts (with TL/DW boost)
+    //   Crossword (2 short words):  20-50 pts (one on multiplier = big)
+    //   With bookmark bonuses:      +2-15 gold + score boosts per turn
     //
-    // With 4 hands per round, a typical competitive hand is ~40-60 pts
-    // (1-2 words, one with a DW/TL boost). Average across all players:
+    // Feasibility table (4 hands per round, avg player):
     //
-    //   Round  | Target | pts/hand needed | Feasibility
-    //   ------ | ------ | --------------- | -----------
-    //    1     |  30    |  7.5             | One 3-letter word. Very easy.
-    //    3     |  90    | 22.5             | 3-letter + crossword. Easy.
-    //    5     | 150    | 37.5             | 4-letter word + multiplier. Fair.
-    //    6     | 174    | 43.5             | Word Eater boss reduces to 113.
-    //   10     | 270    | 67.5             | Needs bookmarks + inks. Challenging.
-    //   15     | 390    | 97.5             | Requires strong build. Hard.
-    //   20     | 510    | 127.5            | Near-endgame. Very hard.
-    //   25     | 1812   | 453.0            | Quadratic scaling kicks in. Brutal.
+    //   Round  | Target | pts/hand | Feasibility
+    //   ------ | ------ | -------- | -----------
+    //    1     |  30    |  7.5     | One short word. Very easy.
+    //    3     |  90    | 22.5     | 3-letter + crosswords. Easy.
+    //    5     | 150    | 37.5     | Needs 4-letter word + mult. Fair.
+    //    6     | 174    | 43.5     | Word Eater drops to 96 (0.55×).
+    //    8     | 222    | 55.5     | Good crosswords + some bookmarks.
+    //   10     | 270    | 67.5     | Needs bookmarks + inks. Challenging.
+    //   15     | 390    | 97.5     | Strong build required. Hard.
+    //   20     | 510    | 127.5    | Near-endgame. Very hard.
+    //   25     | 1812   | 453.0    | Quadratic. Pure survival mode.
+    //
+    // At round 10 (270 pts), a player with 3-4 bookmarks and one ink pack
+    // can average ~40-50 pts/hand from crosswords (20-40) + bookmark
+    // bonuses (Focus +2, Efficiency +2-4, Collector +9-12). That puts
+    // them at 55-65 pts/hand — still tight but winnable with discipline.
     //
     // Boss adjustments (in bosses.js):
     //   Round  3 Ink Thief:   no target change (steals tiles instead)
-    //   Round  6 Word Eater:  ×0.65 (can only use 2-3 letter words)
+    //   Round  6 Word Eater:  ×0.55 (only 2-3 letter words)
     //   Round  9 Gilded Golem: ×1.5 (higher target, double gold)
-    //   Round 12 Time Warp:   handsLeft=3 (fewer submissions, triple gold)
-    //   Round 15 The Mirror:  no target change (mirrored tiles help)
-    //   Round 18 The Void:    ×0.75 (consumes tiles, lower target)
+    //   Round 12 Time Warp:   handsLeft=3 (fewer submissions)
+    //   Round 15 The Mirror:  no target change
+    //   Round 18 The Void:    ×0.75 (consumes tiles)
     //
-    // The round×24+30 slope was chosen because round×30 became punishing
-    // past round 5 — average players hit a wall. The gentler slope keeps
-    // the game winnable through round 15 while still demanding competence.
     // ──────────────────────────────────────────────────────────────────────
     if (round < 5) return round * 30;
     if (round <= 20) return Math.floor(round * 24 + 30);

@@ -78,30 +78,34 @@ export const BOSSES = {
             // ── Word Eater target balance ────────────────────────────────
             // This boss restricts submissions to 2-3 letter words — any word
             // of 4+ letters is eaten (tiles lost forever). With only short
-            // words, typical scoring drops significantly.
+            // words, typical scoring drops dramatically.
             //
-            // Realistic scoring estimates with 2-3 letter words only:
-            //   2-letter word:    4-8  pts (two common letters ± TL)
-            //   3-letter word:   12-20 pts (three letters; avg value ~5)
-            //   With crosswords: 20-40 pts per hand (2 overlapping short words)
+            // Realistic scoring with 2-3 letter words only:
+            //   2-letter word:      2-6  pts (e.g. IT=2, OX=9, JO=10)
+            //   3-letter word:      5-12 pts (e.g. CAT=5, THE=6, JAB=12)
+            //   With crosswords:   15-35 pts per hand (overlapping short words)
+            //   With board mults:  20-50 pts per hand (one DW/TL boost)
             //
-            // At round 6, base target = 174 (6×24+30). With 70% factor:
-            //   target = 174 × 0.70 = 122
-            //   4 hands × avg 30 pts (single 3-letter + crosswords) = 120 pts
-            //   → Barely achievable with good play and board multipliers.
+            // At round 6, base target = 174 (6×24+30). The restriction to
+            // only 2-3 letter words is punishing — you lose the ability to
+            // score big with 5+ letter words and DW combinations.
             //
-            // At 60%: target = 174 × 0.60 = 104
-            //   → Comfortable — 4 × 26 pts avg, easily doable with crosswords
+            // Original factor was 0.65 (target=113, 28 pts/hand). Analysis:
+            //   A typical 3-letter word like THE = 1+4+1 = 6 pts.
+            //   Even on a DW: 12 pts. With crosswords: maybe 20-25 pts.
+            //   To average 28 pts/hand, you'd need a cross+mult every single
+            //   hand — punishing for players without bookmarks/inks yet.
             //
-            // At 65%: target = 174 × 0.65 = 113
-            //   → Sweet spot — requires consistent short-word crosswords
-            //     without being punishing. Rewards players who build
-            //     intersecting 2-3 letter words and use board multipliers.
+            // At 0.55 (target=96, 24 pts/hand):
+            //   A cross-word pair (2 words, one on a DL or DW) = 25-35 pts.
+            //   Achievable in 3 of 4 hands = 75-105 pts. Feels like a
+            //   genuine short-word puzzle rather than a brick wall.
             //
-            // The boss is supposed to feel restrictive, not impossible.
-            // 65% (113 pts at round 6) is challenging but winnable.
+            // The boss should feel restrictive but winnable — the challenge
+            // is "make do with small words and board multipliers", not
+            // "grind for 4+ crosswords every hand or lose".
             // ──────────────────────────────────────────────────────────────
-            state.targetScore = Math.ceil(state.targetScore * 0.65);
+            state.targetScore = Math.ceil(state.targetScore * 0.55);
         },
         onSubmission(state) {
             // Return empty — the "eaten" logic is in main.js where we check word length

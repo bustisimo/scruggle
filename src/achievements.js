@@ -175,6 +175,31 @@ export const achievements = [
             const bookmarks = state.inventory.filter(id => !id.startsWith('sticker_') && !id.startsWith('pack_') && id !== 'buy_letter');
             return bookmarks.length >= 15;
         }},
+    // ── New original achievements ──────────────────────────────────────────
+    { id: 'round_15', name: 'Deep Thinker', desc: 'Reach round 15', icon: '🧠',
+        check(state, stats, context) { return state.currentRound >= 15; }},
+    { id: 'round_25', name: 'Persistence', desc: 'Reach round 25', icon: '🎯',
+        check(state, stats, context) { return state.currentRound >= 25; }},
+    { id: 'half_marathon', name: 'Half Marathon', desc: 'Win 5 rounds total', icon: '🏅',
+        check(state, stats, context) { return stats.totalWins >= 5; }},
+    { id: 'total_words_100', name: 'The Grinder', desc: 'Submit 100 total words', icon: '📖',
+        check(state, stats, context) { return stats.totalWords >= 100; }},
+    { id: 'comeback', name: 'Comeback Kid', desc: 'Win a round with only 1 hand left', icon: '💪',
+        check(state, stats, context) { return context.roundWon && state.handsLeft === 1; }},
+    { id: 'no_discard', name: 'The Wall', desc: 'Win a round without using any discards', icon: '🛡️',
+        check(state, stats, context) { return context.roundWon && state.discardsLeft >= 3; }},
+    { id: 'bronze_hoard', name: 'Bronze Hoard', desc: 'Earn 250 total gold', icon: '🪙',
+        check(state, stats, context) { return stats.totalGold >= 250; }},
+    { id: 'score_2500', name: 'Score Collector', desc: 'Score 2,500 lifetime points', icon: '📊',
+        check(state, stats, context) { return (stats.totalScore || 0) >= 2500; }},
+    { id: 'total_words_750', name: 'Master Scribe', desc: 'Submit 750 total words', icon: '📚',
+        check(state, stats, context) { return stats.totalWords >= 750; }},
+    { id: 'double_boss', name: 'Double Trouble', desc: 'Defeat 2 bosses in one run', icon: '👹',
+        check(state, stats, context) { return (state.defeatedBosses || []).length >= 2; }},
+    { id: 'first_million', name: 'Score Hoarder', desc: 'Score 50,000 lifetime points', icon: '🏆',
+        check(state, stats, context) { return (stats.totalScore || 0) >= 50000; }},
+    { id: 'small_spender', name: 'Small Spender', desc: 'Own 3+ items at once', icon: '🛒',
+        check(state, stats, context) { return state.inventory.length >= 3; }},
 ];
 
 let unlockedAchievements = [];
@@ -332,6 +357,18 @@ export function getAchievementProgress(achId) {
         case 'rich_2000': return 'Hold 2000+ gold';
         case 'eternal': return `${stats.maxRound || 1}/75 rounds`;
         case 'bookmark_hoarder': return 'Own 15+ bookmarks';
+        case 'round_15': return `${stats.maxRound || 1}/15 rounds`;
+        case 'round_25': return `${stats.maxRound || 1}/25 rounds`;
+        case 'half_marathon': return `${stats.totalWins || 0}/5 wins`;
+        case 'total_words_100': return `${stats.totalWords || 0}/100 words`;
+        case 'comeback': return 'Win with 1 hand left';
+        case 'no_discard': return 'Win with 3 discards remaining';
+        case 'bronze_hoard': return `${stats.totalGold || 0}/250 gold`;
+        case 'score_2500': return `${stats.totalScore || 0}/2500 score`;
+        case 'total_words_750': return `${stats.totalWords || 0}/750 words`;
+        case 'double_boss': return 'Defeat 2 bosses in one run';
+        case 'first_million': return `${stats.totalScore || 0}/50000 score`;
+        case 'small_spender': return 'Own 3+ items at once';
         default: return '';
     }
 }

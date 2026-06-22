@@ -1411,18 +1411,27 @@ function spawnConfetti() {
     const container = document.getElementById('win-confetti-container');
     if (!container) return;
     container.innerHTML = '';
-    const count = 50;
+    const count = 80;
+    const palettes = [
+        [0, 30, 45, 350],       // Reds & oranges
+        [40, 55, 60],            // Yellows & golds
+        [120, 140, 160],         // Greens
+        [190, 210, 230],         // Blues & cyans
+        [270, 290, 310],         // Purples
+        [330, 345, 355],         // Pinks & magentas
+    ];
     for (let i = 0; i < count; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
-        const hue = Math.floor(Math.random() * 360);
-        const size = 6 + Math.floor(Math.random() * 10);
+        const palette = palettes[i % palettes.length];
+        const hue = palette[Math.floor(Math.random() * palette.length)];
+        const size = 5 + Math.floor(Math.random() * 12);
         const x = Math.random() * 100;
-        const y = 60 + Math.random() * 120;
-        const drift = (Math.random() - 0.5) * 100;
-        const dur = 1.2 + Math.random() * 1.8;
-        const del = Math.random() * 1.2;
-        const spin = 180 + Math.floor(Math.random() * 720);
+        const y = 60 + Math.random() * 160;
+        const drift = (Math.random() - 0.5) * 140;
+        const dur = 1.5 + Math.random() * 2.0;
+        const del = Math.random() * 1.5;
+        const spin = 180 + Math.floor(Math.random() * 1080);
         piece.style.cssText = `
             --x: ${x}%;
             --y: ${y}px;

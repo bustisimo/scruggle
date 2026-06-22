@@ -91,32 +91,35 @@ export const BOSSES = {
             // of 4+ letters is eaten (tiles lost forever). With only short
             // words, typical scoring drops dramatically.
             //
+            // v2 balance update: factor bumped from 0.55 → 0.60.
+            // At 0.55 (target=96, 24 pts/hand), even skilled players with
+            // good multiplier luck were barely scraping by. 2-letter words
+            // average 5 pts, 3-letter average 6-8 pts. With a cross on a
+            // DL you hit ~14-20 pts/hand. 24 pts/hand required a cross+mult
+            // every single hand — too punishing for a first-time encounter.
+            //
+            // At 0.60 (target=93, 23.25 pts/hand) — slightly gentler target
+            // due to the new round scaling formula alone. The factor gives
+            // the same relative reduction, but the base is now 154 instead
+            // of 174, so the absolute target drops to 93.
+            //
             // Realistic scoring with 2-3 letter words only:
             //   2-letter word:      2-6  pts (e.g. IT=2, OX=9, JO=10)
             //   3-letter word:      5-12 pts (e.g. CAT=5, THE=6, JAB=12)
             //   With crosswords:   15-35 pts per hand (overlapping short words)
             //   With board mults:  20-50 pts per hand (one DW/TL boost)
             //
-            // At round 6, base target = 174 (6×24+30). The restriction to
-            // only 2-3 letter words is punishing — you lose the ability to
-            // score big with 5+ letter words and DW combinations.
-            //
-            // Original factor was 0.65 (target=113, 28 pts/hand). Analysis:
-            //   A typical 3-letter word like THE = 1+4+1 = 6 pts.
-            //   Even on a DW: 12 pts. With crosswords: maybe 20-25 pts.
-            //   To average 28 pts/hand, you'd need a cross+mult every single
-            //   hand — punishing for players without bookmarks/inks yet.
-            //
-            // At 0.55 (target=96, 24 pts/hand):
-            //   A cross-word pair (2 words, one on a DL or DW) = 25-35 pts.
-            //   Achievable in 3 of 4 hands = 75-105 pts. Feels like a
-            //   genuine short-word puzzle rather than a brick wall.
+            // A cross-word pair (2 words, one on a DL or DW) = 25-35 pts.
+            // Achievable in 3 of 4 hands = 75-105 pts. At 93 target, you
+            // need ~23 pts/hand — a single 3-letter word on a DW (12 pts)
+            // crossed with a 2-letter word on a DL (10 pts) = 22. Close.
+            // With a better combo (JAB on DW=24, cross with IT=4): 28.
             //
             // The boss should feel restrictive but winnable — the challenge
             // is "make do with small words and board multipliers", not
             // "grind for 4+ crosswords every hand or lose".
             // ──────────────────────────────────────────────────────────────
-            state.targetScore = Math.ceil(state.targetScore * 0.55);
+            state.targetScore = Math.ceil(state.targetScore * 0.60);
         },
         onSubmission(state) {
             // Return empty — the "eaten" logic is in main.js where we check word length

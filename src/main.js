@@ -829,12 +829,12 @@ function setupEventListeners() {
                     }
 
                     if (tile.ink === 'gold') {
-                        turnGold += 5;
-                        bonusTexts.push('✨ Gold +5');
+                        turnGold += 7;
+                        bonusTexts.push('✨ Gold +7');
                     }
                     if (tile.ink === 'void') {
-                        turnScore += 15;
-                        bonusTexts.push('💜 Void +15');
+                        turnScore += 18;
+                        bonusTexts.push('💜 Void +18');
                     }
                     if (tile.ink === 'prism') {
                         wordMultiplier += 1;

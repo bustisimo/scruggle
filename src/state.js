@@ -293,8 +293,8 @@ export const shopItems = [
     ...Object.values(bookmarksRegistry).map(({ id, name, desc, price }) => ({ id, name, desc, price })),
     { id: 'pack_fire', name: 'Fire Ink Pack', desc: 'Apply Fire Ink to 3 random tiles in your bag. Fire Ink doubles letter scoring.', price: 15 },
     { id: 'pack_ice', name: 'Ice Ink Pack', desc: 'Apply Ice Ink to 3 random tiles in your bag. Ice Ink tiles remain unlocked on submission, then melt.', price: 15 },
-    { id: 'pack_gold', name: 'Gold Ink Pack', desc: 'Apply Gold Ink to 2 random tiles in your bag. Gold Ink yields +5 Gold when scored.', price: 20 },
-    { id: 'pack_void', name: 'Void Ink Pack', desc: 'Apply Void Ink to 2 random tiles in your bag. Void Ink adds +15 Score, but disintegrates the tile after scoring.', price: 20 },
+    { id: 'pack_gold', name: 'Gold Ink Pack', desc: 'Apply Gold Ink to 2 random tiles in your bag. Gold Ink yields +7 Gold when scored.', price: 20 },
+    { id: 'pack_void', name: 'Void Ink Pack', desc: 'Apply Void Ink to 2 random tiles in your bag. Void Ink adds +18 Score, but disintegrates the tile after scoring.', price: 20 },
     // ── Ink pack price notes ──────────────────────────────────────────────
     // Comparative analysis (cost per tile × ongoing vs one-shot value):
     //
@@ -307,10 +307,17 @@ export const shopItems = [
     //          Ongoing, but requires the tile to survive on board.
     //
     // Tier 2 — One-shot bonuses (20g, 2 tiles = 10g/tile):
-    //   Gold:  +5 gold per score. One-shot: +10g total per pack.
-    //          Pays for itself in savings if you score both tiles once.
-    //   Void:  +15 score per tile. One-shot: 30 total pts pack.
-    //          Single big burst vs Fire's ongoing doubling.
+    //   Gold:  +7 gold per tile scored. One-shot: +14g total per pack.
+    //          v2 bumped from +5 → +7: at +5g, the pack cost 20g but you
+    //          earned 10g max (2 tiles) — net loss of 10g. Even with
+    //          tiles cycling back to bag, you'd need 3 scoring cycles to
+    //          break even. At +7g (14g/pack), you recover 70% on first
+    //          score and profit on the second cycle. Much healthier.
+    //   Void:  +18 score per tile. One-shot: 36 total pts pack.
+    //          v2 bumped from +15 → +18: +15 felt weak for losing a tile
+    //          permanently. At +18/tile (36 total), the burst is worth
+    //          the permanent bag shrinkage. ~1.8g/pt ratio vs Fire's
+    //          ongoing ~0.42g/pt — fair trade for immediate impact.
     //   Storm: +3 bonus score to adjacent words. Ongoing but situational.
     //          Best on center tiles where it touches 3-4 adjacent words.
     //
@@ -331,10 +338,10 @@ export const shopItems = [
     // intentional — they teach different playstyles through cost:
     //
     //   Void (20g/2 tiles):
-    //     One-shot 30pt burst. The tile is *consumed* — gone from
+    //     One-shot 36pt burst. The tile is *consumed* — gone from
     //     your bag forever. Net bag size shrinks over the run.
     //     | Cost   | Benefit              | Duration  | Risk         |
-    //     | 10g/tile | +15 pts, tile lost  | one-shot  | Bag shrink  |
+    //     | 10g/tile | +18 pts, tile lost | one-shot  | Bag shrink  |
     //     Best use: push over the target line when you're short.
     //     Worst use: on rare letters (J/Q/X/Z) that you'd rather keep.
     //
@@ -511,8 +518,13 @@ export function getEndlessTargetScore(round) {
     //
     // Formula:
     //   Rounds 1-4:  round × 30          (gentle intro — 30, 60, 90, 120)
-    //   Rounds 5-20: round × 24 + 30     (steady climb — 150 → 510)
+    //   Rounds 5-20: round × 24 + 10     (steady climb — 130 → 490)
     //   Rounds 21+:  round × 35 + r² × 1.5 (quadratic — brutal endgame)
+    //
+    // v2 balance note: the intercept was dropped from 30 to 10 after playtesting
+    // showed that 174 at round 6 was punishing for fresh players without bookmarks.
+    // The -20 reduction across the board makes rounds 5-12 notably more approachable
+    // while keeping round 15+ targets tight for build-reliant play.
     //
     // Per-hand scoring (standard 7-tile hand):
     //   Single 3-letter word:       5-12 pts  (e.g. CAT=5, THE=6, JAB=12)
@@ -526,22 +538,22 @@ export function getEndlessTargetScore(round) {
     //   ------ | ------ | -------- | -----------
     //    1     |  30    |  7.5     | One short word. Very easy.
     //    3     |  90    | 22.5     | 3-letter + crosswords. Easy.
-    //    5     | 150    | 37.5     | Needs 4-letter word + mult. Fair.
-    //    6     | 174    | 43.5     | Word Eater drops to 96 (0.55×).
-    //    8     | 222    | 55.5     | Good crosswords + some bookmarks.
-    //   10     | 270    | 67.5     | Needs bookmarks + inks. Challenging.
-    //   15     | 390    | 97.5     | Strong build required. Hard.
-    //   20     | 510    | 127.5    | Near-endgame. Very hard.
+    //    5     | 130    | 32.5     | Needs 4-letter word + mult. Fair.
+    //    6     | 154    | 38.5     | Word Eater drops to ~93 (0.60×).
+    //    8     | 202    | 50.5     | Good crosswords + some bookmarks.
+    //   10     | 250    | 62.5     | Needs bookmarks + inks. Fair.
+    //   15     | 370    | 92.5     | Strong build required. Hard.
+    //   20     | 490    | 122.5    | Near-endgame. Very hard.
     //   25     | 1812   | 453.0    | Quadratic. Pure survival mode.
     //
-    // At round 10 (270 pts), a player with 3-4 bookmarks and one ink pack
+    // At round 10 (250 pts), a player with 3-4 bookmarks and one ink pack
     // can average ~40-50 pts/hand from crosswords (20-40) + bookmark
     // bonuses (Focus +2, Efficiency +2-4, Collector +9-12). That puts
     // them at 55-65 pts/hand — still tight but winnable with discipline.
     //
     // Boss adjustments (in bosses.js):
     //   Round  3 Ink Thief:   no target change (steals tiles instead)
-    //   Round  6 Word Eater:  ×0.55 (only 2-3 letter words)
+    //   Round  6 Word Eater:  ×0.60 (only 2-3 letter words)
     //   Round  9 Gilded Golem: ×1.5 (higher target, double gold)
     //   Round 12 Time Warp:   handsLeft=3 (fewer submissions)
     //   Round 15 The Mirror:  no target change
@@ -549,7 +561,7 @@ export function getEndlessTargetScore(round) {
     //
     // ──────────────────────────────────────────────────────────────────────
     if (round < 5) return round * 30;
-    if (round <= 20) return Math.floor(round * 24 + 30);
+    if (round <= 20) return Math.floor(round * 24 + 10);
     return Math.floor(round * 35 + round * round * 1.5);
 }
 

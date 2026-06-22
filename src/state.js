@@ -518,17 +518,21 @@ export function getEndlessTargetScore(round) {
     //   Using `round × 30` everywhere would be punishing past round 5.
     //   At round 10 that's 300 pts in 4 hands = 75 pts/hand. A competitive
     //   crossword hand is ~40-60 pts; at 75 you'd need a bingo every hand.
-    //   Hence the gentler `round × 24 + 30` for rounds 5-20.
+    //   Hence the gentler `round × 24 + 10` for rounds 5-20.
     //
-    // Formula:
     //   Rounds 1-4:  round × 30          (gentle intro — 30, 60, 90, 120)
     //   Rounds 5-20: round × 24 + 10     (steady climb — 130 → 490)
     //   Rounds 21+:  round × 35 + r² × 1.5 (quadratic — brutal endgame)
     //
-    // v2 balance note: the intercept was dropped from 30 to 10 after playtesting
-    // showed that 174 at round 6 was punishing for fresh players without bookmarks.
-    // The -20 reduction across the board makes rounds 5-12 notably more approachable
-    // while keeping round 15+ targets tight for build-reliant play.
+    // v2 adjustments (current):
+    //   - Formula changed from round×30 to round×24+10 for 5-20.
+    //     Round 6 dropped from 180 → 154, a 14% reduction.
+    //   - Word Eater (round 6) factor reduced 0.60→0.55 AND +3 short-word
+    //     bonus added (see bosses.js). Effective target: ceil(154 × 0.55) = 85,
+    //     minus ~18-30 bonus pts from short crosswords = 55-67 actual need.
+    //   - Bookmark prices: 15-45g range documented above. No formula change
+    //     needed — the economy supports one affordable bookmark (15-20g)
+    //     by round 3-4 and a build-defining combo by round 7-8.
     //
     // Per-hand scoring (standard 7-tile hand):
     //   Single 3-letter word:       5-12 pts  (e.g. CAT=5, THE=6, JAB=12)
@@ -543,7 +547,7 @@ export function getEndlessTargetScore(round) {
     //    1     |  30    |  7.5     | One short word. Very easy.
     //    3     |  90    | 22.5     | 3-letter + crosswords. Easy.
     //    5     | 130    | 32.5     | Needs 4-letter word + mult. Fair.
-    //    6     | 154    | 38.5     | Word Eater drops to ~93 (0.60×).
+    //    6     | 154    | 38.5     | Word Eater at 0.55 = 85 + short bonus.
     //    8     | 202    | 50.5     | Good crosswords + some bookmarks.
     //   10     | 250    | 62.5     | Needs bookmarks + inks. Fair.
     //   15     | 370    | 92.5     | Strong build required. Hard.
@@ -557,7 +561,7 @@ export function getEndlessTargetScore(round) {
     //
     // Boss adjustments (in bosses.js):
     //   Round  3 Ink Thief:   no target change (steals tiles instead)
-    //   Round  6 Word Eater:  ×0.60 (only 2-3 letter words)
+    //   Round  6 Word Eater:  ×0.55 + per-word +3 short bonus
     //   Round  9 Gilded Golem: ×1.5 (higher target, double gold)
     //   Round 12 Time Warp:   handsLeft=3 (fewer submissions)
     //   Round 15 The Mirror:  no target change

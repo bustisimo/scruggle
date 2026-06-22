@@ -940,6 +940,20 @@ function setupEventListeners() {
 
             const finalWordScore = sumLetters * wordMultiplier;
 
+            // ── Word Eater short-word bonus ────────────────────────────
+            // During the Word Eater encounter (round 6), 2-3 letter words
+            // get a flat +3 bonus. This bridges the gap between natural
+            // short-word scoring (~5-12 pts) and what's needed to hit the
+            // reduced target (85 in 4 hands = 21.25 pts/hand).
+            // The bonus is applied as raw score (not multiplied by word mult)
+            // so it rewards forming lots of small crosswords, not stacking
+            // multipliers onto one word.
+            // ────────────────────────────────────────────────────────────
+            let shortWordBonus = 0;
+            if (gameState.activeBoss === 'word_eater' && w.word.length >= 2 && w.word.length <= 3) {
+                shortWordBonus = BOSSES.word_eater.shortWordBonus;
+            }
+
             let wordGold = Math.floor(finalWordScore / 5);
             const wordContext = { word: w.word, wordGold, finalWordScore };
             triggerHook('onWordScored', wordContext);
@@ -967,10 +981,11 @@ function setupEventListeners() {
                 multiplierText,
                 wordScore: finalWordScore,
                 wordGold,
+                shortWordBonus: shortWordBonus > 0 ? shortWordBonus : null,
                 bonusTexts: bonusTexts.length > 0 ? bonusTexts : null,
             });
 
-            turnScore += finalWordScore;
+            turnScore += finalWordScore + shortWordBonus;
             turnGold += wordGold;
         });
 

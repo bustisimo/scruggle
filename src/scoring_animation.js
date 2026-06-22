@@ -165,7 +165,14 @@ function createWordCard(wd) {
     // Word score
     const scoreEl = document.createElement('span');
     scoreEl.className = 'scoring-result-item scoring-result-score';
-    scoreEl.innerText = `${wd.wordScore} pts`;
+    // Show short-word bonus inline when active (Word Eater boss)
+    const totalWordPts = wd.wordScore + (wd.shortWordBonus || 0);
+    if (wd.shortWordBonus) {
+        scoreEl.innerText = `${wd.wordScore}+${wd.shortWordBonus} WordEtr`;
+        scoreEl.title = `${totalWordPts} pts total (${wd.wordScore} base + ${wd.shortWordBonus} short-word bonus)`;
+    } else {
+        scoreEl.innerText = `${wd.wordScore} pts`;
+    }
     results.appendChild(scoreEl);
 
     // Gold badge
@@ -261,7 +268,17 @@ function animateSequentially(wordsData, turnScore, turnGold, continueBtn) {
 
                     // Counter animation for score
                     if (item.classList.contains('scoring-result-score')) {
-                        animateNumber(item, wd.wordScore, 'pts', 600);
+                        // Count up to the final display value
+                        const isShortWord = wd.shortWordBonus > 0;
+                        const animateTarget = isShortWord ? (wd.wordScore + wd.shortWordBonus) : wd.wordScore;
+                        const suffix = isShortWord ? 'pts' : 'pts';
+                        animateNumber(item, animateTarget, suffix, 600);
+                        if (isShortWord) {
+                            // After counter finishes, append the bonus breakdown
+                            setTimeout(() => {
+                                item.innerText = `${wd.wordScore}+${wd.shortWordBonus} WordEtr`;
+                            }, 650);
+                        }
                     }
                     // Gold just fades in
                     if (item.classList.contains('scoring-result-gold')) {

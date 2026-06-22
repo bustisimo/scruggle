@@ -105,41 +105,49 @@ export const BOSSES = {
         ],
         reward: { type: 'hand_size', desc: 'Permanent Hand Size +1' },
         onBossStart(state) {
-            // ── Word Eater target balance ────────────────────────────────
+            // ── Word Eater target & bonus balance ─────────────────────────
             // This boss restricts submissions to 2-3 letter words — any word
             // of 4+ letters is eaten (tiles lost forever). With only short
             // words, typical scoring drops dramatically.
             //
-            // v2 balance update: factor bumped from 0.55 → 0.60.
-            // At 0.55 (target=96, 24 pts/hand), even skilled players with
-            // good multiplier luck were barely scraping by. 2-letter words
-            // average 5 pts, 3-letter average 6-8 pts. With a cross on a
-            // DL you hit ~14-20 pts/hand. 24 pts/hand required a cross+mult
-            // every single hand — too punishing for a first-time encounter.
+            // Strategy: lower target + short-word bonus.
             //
-            // At 0.60 (target=93, 23.25 pts/hand) — slightly gentler target
-            // due to the new round scaling formula alone. The factor gives
-            // the same relative reduction, but the base is now 154 instead
-            // of 174, so the absolute target drops to 93.
+            // Target adjustment: factor = 0.55 of the round's base target.
+            //   Current formula (state.js): round × 24 + 10 at round 6 = 154.
+            //   154 × 0.55 = 84.7 → ceil 85.  Hands: 4 → 21.25 pts/hand.
             //
-            // Realistic scoring with 2-3 letter words only:
-            //   2-letter word:      2-6  pts (e.g. IT=2, OX=9, JO=10)
-            //   3-letter word:      5-12 pts (e.g. CAT=5, THE=6, JAB=12)
-            //   With crosswords:   15-35 pts per hand (overlapping short words)
-            //   With board mults:  20-50 pts per hand (one DW/TL boost)
+            // Short-word bonus: +3 pts per 2-3 letter word scored during the
+            // fight, applied in main.js. In 4 hands with crosswords the player
+            // scores ~6-10 short words, earning 18-30 bonus pts. Effective
+            // target becomes 55-67 — achievable with one decent cross per hand
+            // (a 3-letter word on DW ≈ 24 pts, plus a 2-letter cross ≈ 4).
             //
-            // A cross-word pair (2 words, one on a DL or DW) = 25-35 pts.
-            // Achievable in 3 of 4 hands = 75-105 pts. At 93 target, you
-            // need ~23 pts/hand — a single 3-letter word on a DW (12 pts)
-            // crossed with a 2-letter word on a DL (10 pts) = 22. Close.
-            // With a better combo (JAB on DW=24, cross with IT=4): 28.
+            // Without the bonus (factor = 0.60, target = 93), the player needs
+            // 23.25 pts/hand. A single 3-letter word (7 pts) + cross (4 pts)
+            // = 11 — not enough without multiplier luck. The bonus bridges
+            // that gap and makes short-word play feel rewarding. The boss
+            // should teach "small crosswords are powerful," not "grind 50
+            // submissions per round."
             //
-            // The boss should feel restrictive but winnable — the challenge
-            // is "make do with small words and board multipliers", not
-            // "grind for 4+ crosswords every hand or lose".
+            // Realistic scoring with 2-3 letter words + bonus:
+            //   2-letter word:      2-6  pts + 3 bonus = 5-9
+            //   3-letter word:      5-12 pts + 3 bonus = 8-15
+            //   Crossword pair:    ~15-35 pts (with mults + bonus)
+            //   With board mults:  ~25-50 pts per hand
+            //
+            // Achievement table (per hand, 4 hands):
+            //   Casual (no cross): 1 word × 8 pts = 8 → 32 total ← FAIL
+            //   Basic cross:       2 words × 10 = 20 → 80 total ← NEAR
+            //   Good cross + mult: 2 words × 20 = 40 → 160 total ← WIN
+            //   Great (DW + DL):   2 words × 30 = 60 → 240 total ← COMFY
+            //
+            // At 85 pts, the player wins with basic crosswords (~20/hand)
+            // and crushes with a single good multiplier hand. This is the
+            // sweet spot — challenging but not grindy.
             // ──────────────────────────────────────────────────────────────
-            state.targetScore = Math.ceil(state.targetScore * 0.60);
+            state.targetScore = Math.ceil(state.targetScore * 0.55);
         },
+        shortWordBonus: 3,
         onSubmission(state) {
             // Return empty — the "eaten" logic is in main.js where we check word length
             return { message: null };

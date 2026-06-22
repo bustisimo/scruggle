@@ -89,6 +89,9 @@ function showNextToast() {
 }
 
 function showAchievementToast(ach) {
+    // Dispatch event for audio system
+    document.dispatchEvent(new CustomEvent('achievement-unlocked', { detail: ach }));
+
     let container = document.getElementById('achievement-toasts');
     if (!container) {
         container = document.createElement('div');

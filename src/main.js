@@ -12,6 +12,7 @@ import { openShop, buyItem } from './shop.js';
 import { loadAchievements, checkAchievements, getUnlockedCount } from './achievements.js';
 import { BOSSES, getBossForRound, applyBossReward } from './bosses.js';
 import { showScoringAnimation, closeScoringAnimation } from './scoring_animation.js';
+import audio from './audio.js';
 
 async function init() {
     loadAchievements();
@@ -328,6 +329,8 @@ function showBossDefeat(boss) {
     saveGame();
 
     document.getElementById('boss-defeat-screen').style.display = 'flex';
+    audio.roundWin();
+    audio.goldEarned();
 }
 
 function drawTiles() {
@@ -414,6 +417,8 @@ function checkWinLoss() {
 
         const bonus = gameState.handsLeft * 10;
         gameState.gold += bonus;
+        audio.roundWin();
+        if (bonus > 0) audio.goldEarned();
         saveGame();
         renderUI();
         document.getElementById('win-message').innerText = `Target reached! Bonus Gold: +${bonus}`;
@@ -426,6 +431,7 @@ function checkWinLoss() {
         checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords });
     } else if (gameState.handsLeft <= 0) {
         document.getElementById('loss-modal').style.display = 'flex';
+        audio.roundLoss();
     }
 }
 
@@ -535,6 +541,7 @@ function setupEventListeners() {
     document.getElementById('submit-btn').onclick = async () => {
         const validation = validateBoard();
         if (!validation.allValid) {
+            audio.invalidWord();
             const boardEl = document.getElementById('board');
             boardEl.classList.remove('board-shake');
             void boardEl.offsetWidth;
@@ -689,6 +696,9 @@ function setupEventListeners() {
         gameState.score += turnScore;
         gameState.gold += turnGold;
         gameState.handsLeft--;
+
+        audio.wordSubmit();
+        if (turnGold > 0) audio.goldEarned();
 
         // Boss mechanic: Gilded Golem doubles gold
         if (gameState.activeBoss === 'gilded_golem') {
@@ -871,6 +881,20 @@ function setupEventListeners() {
     document.getElementById('close-inv-btn').onclick = () => {
         if (invDrawer) invDrawer.classList.remove('open');
     };
+
+    // Mute toggle
+    const muteBtn = document.getElementById('mute-btn');
+    if (muteBtn) {
+        muteBtn.onclick = () => {
+            const muted = audio.toggle();
+            muteBtn.innerText = muted ? '🔇' : '🔊';
+        };
+    }
+
+    // Achievement unlock listener
+    document.addEventListener('achievement-unlocked', () => {
+        audio.achievementUnlock();
+    });
 
     // Boss intro "Fight" button
     const bossFightBtn = document.getElementById('boss-intro-fight-btn');

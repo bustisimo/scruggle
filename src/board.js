@@ -258,6 +258,7 @@ export function handleBoardClick(x, y, saveCallback, renderCallback) {
         const index = Array.from(gameState.selectedHandIndices)[0];
         gameState.board[y][x] = gameState.hand.splice(index, 1)[0];
         gameState.selectedHandIndices.clear();
+        import('./audio.js').then(m => m.default.tilePlace());
         saveCallback();
         renderCallback();
     }

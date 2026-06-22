@@ -588,6 +588,8 @@ function setupEventListeners() {
             document.body.classList.add('theme-light');
             themeBtn.classList.add('theme-light-btn');
             themeBtn.innerText = 'Light';
+        } else {
+            themeBtn.innerText = 'Dark';
         }
         themeBtn.onclick = () => {
             const isLight = document.body.classList.toggle('theme-light');
@@ -1482,14 +1484,16 @@ function spawnConfetti() {
     const container = document.getElementById('win-confetti-container');
     if (!container) return;
     container.innerHTML = '';
-    const count = 80;
+    const count = 120;
     const palettes = [
-        [0, 30, 45, 350],       // Reds & oranges
-        [40, 55, 60],            // Yellows & golds
-        [120, 140, 160],         // Greens
-        [190, 210, 230],         // Blues & cyans
-        [270, 290, 310],         // Purples
-        [330, 345, 355],         // Pinks & magentas
+        [0, 10, 20, 350],         // Reds & magentas
+        [40, 48, 55, 60],          // Yellows & golds
+        [100, 120, 140, 160],      // Greens
+        [190, 205, 220, 235],      // Blues & cyans
+        [270, 285, 300, 315],      // Purples
+        [330, 340, 350, 355],      // Pinks
+        [15, 25, 35],              // Oranges
+        [170, 180, 195],           // Teals
     ];
     for (let i = 0; i < count; i++) {
         const piece = document.createElement('div');

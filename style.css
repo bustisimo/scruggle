@@ -377,13 +377,30 @@ body.theme-light {
     left: 2px;
     font-size: 9px;
     font-weight: 800;
-    color: #8db88f;
     background: rgba(0,0,0,0.35);
     padding: 1px 4px;
     border-radius: 3px;
     line-height: 1;
     pointer-events: none;
     z-index: 2;
+}
+.hand-bag-remaining[data-count="0"],
+.hand-bag-remaining[data-count="1"] {
+    color: #ef5350;
+}
+.hand-bag-remaining[data-count="2"],
+.hand-bag-remaining[data-count="3"] {
+    color: #ffd54f;
+}
+.hand-bag-remaining[data-count="4"],
+.hand-bag-remaining[data-count="5"] {
+    color: #81c784;
+}
+.hand-bag-remaining[data-count^="6"],
+.hand-bag-remaining[data-count^="7"],
+.hand-bag-remaining[data-count^="8"],
+.hand-bag-remaining[data-count^="9"] {
+    color: #4caf50;
 }
 
 /* Bag info & progress bar */

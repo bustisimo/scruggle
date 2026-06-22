@@ -516,6 +516,14 @@ function renderUI() {
         bagCountEl.title = tooltip || 'Bag is empty';
     }
 
+    // Bag progress bar tooltip with distribution
+    const bagProgressContainer = document.getElementById('bag-progress-container');
+    if (bagProgressContainer) {
+        const bagCounts = computeBagLetterCounts();
+        const tooltip = buildBagDistributionText(bagCounts);
+        bagProgressContainer.title = tooltip || 'Bag is empty';
+    }
+
     const drawer = document.getElementById('bag-drawer');
     if (drawer && drawer.classList.contains('open')) {
         renderBagDrawer();
@@ -1114,6 +1122,12 @@ function setupEventListeners() {
         };
     }
 
+    // Bag progress bar cursor hint
+    const bagProgressContainer = document.getElementById('bag-progress-container');
+    if (bagProgressContainer) {
+        bagProgressContainer.style.cursor = 'pointer';
+    }
+
     document.getElementById('next-round-btn').onclick = () => {
         document.getElementById('win-modal').style.display = 'none';
         // Show round transition screen
@@ -1365,6 +1379,14 @@ function setupEventListeners() {
             e.preventDefault();
             const muteBtn = document.getElementById('mute-btn');
             if (muteBtn) muteBtn.click();
+            return;
+        }
+
+        // S: sort hand alphabetically
+        if (key === 's' || key === 'S') {
+            e.preventDefault();
+            const sortBtn = document.getElementById('sort-hand-btn');
+            if (sortBtn) sortBtn.click();
             return;
         }
     });

@@ -226,6 +226,7 @@ export function renderHand(onTileClick, renderCallback) {
         const remBadge = document.createElement('span');
         remBadge.className = 'hand-bag-remaining';
         remBadge.innerText = remaining;
+        remBadge.dataset.count = remaining;
         remBadge.title = `${remaining} of ${tile.letter} remaining in bag`;
         tileEl.appendChild(remBadge);
         if (gameState.selectedHandIndices.has(index)) tileEl.classList.add('selected');
@@ -390,6 +391,9 @@ export function renderBagDrawer() {
     const container = document.getElementById('bag-drawer-tiles');
     if (!container) return;
     container.innerHTML = '';
+
+    // Remove the outer mini-tiles-container class — we build our own layout inside
+    container.classList.remove('mini-tiles-container');
 
     // ── Letter distribution summary (compact A-Z grid) ───────────────────
     const letterCounts = computeBagLetterCounts();

@@ -559,6 +559,27 @@ export function getEndlessHandSize(round, baseHandSize) {
     return Math.max(4, baseHandSize - reduction);
 }
 
+export function getEndlessNegativeCells(round) {
+    if (round < 21) return 0;
+    return Math.min(round - 20, GRID_SIZE * GRID_SIZE - 4);
+}
+
+export function getEndlessScalingInfo(round) {
+    const info = [];
+    if (round >= 21) {
+        const nm = getEndlessNegativeCells(round);
+        info.push(`🧊 ${nm} Negative cell${nm !== 1 ? 's' : ''} (score ÷2)`);
+    }
+    if (round > 15) {
+        const activeBag = FONT_BAGS[gameState.selectedFontBagId || 'standard'] || FONT_BAGS.standard;
+        const hs = getEndlessHandSize(round, activeBag.handSize);
+        if (hs < activeBag.handSize) {
+            info.push(`🃏 Hand size reduced to ${hs}`);
+        }
+    }
+    return info;
+}
+
 export function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));

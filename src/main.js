@@ -1,7 +1,7 @@
 import {
     gameState, GRID_SIZE, letterDist, shopItems, CLASSIC_MULTIPLIERS,
     saveGame, loadSavedGame, deleteSavedGame, FONT_BAGS, triggerHook, shuffle, getSwapCost,
-    getEndlessTargetScore, getEndlessHandSize, bookmarksRegistry
+    getEndlessTargetScore, getEndlessHandSize, getEndlessNegativeCells, getEndlessScalingInfo, bookmarksRegistry
 } from './state.js';
 import { getStats, updateStats, incrementRuns, incrementWins, getPlayerTitle, getTitleEmoji, recordSubmission, renderStatsDrawer } from './stats.js';
 import { loadDictionary, validateBoard, findWords } from './rules.js';
@@ -310,7 +310,7 @@ function initRound(isNewRun) {
     }
 
     // Endless scaling: negative multiplier cells after round 20
-    const endlessNegCount = gameState.currentRound >= 21 ? Math.min(gameState.currentRound - 20, GRID_SIZE * GRID_SIZE - 4) : 0;
+    const endlessNegCount = getEndlessNegativeCells(gameState.currentRound);
     gameState.endlessNegativeCells = endlessNegCount;
     if (endlessNegCount > 0) {
         const candidates = [];
@@ -397,6 +397,28 @@ function renderUI() {
     document.getElementById('gold').innerText = gameState.gold;
     document.getElementById('bag-count').innerText = gameState.bag.length;
     document.getElementById('round').innerText = gameState.currentRound + (gameState.currentRound >= 21 ? ' - Endless' : '');
+    // Endless scaling info tooltip
+    const roundEl = document.getElementById('round');
+    if (gameState.currentRound >= 21) {
+        const info = getEndlessScalingInfo(gameState.currentRound);
+        roundEl.title = info.length > 0 ? 'Endless Mode:\n' + info.join('\n') : '';
+    } else {
+        roundEl.title = '';
+    }
+
+    // Endless mode badge — shows active debuffs inline
+    const endlessBadge = document.getElementById('endless-badge');
+    if (gameState.currentRound >= 21) {
+        const nm = getEndlessNegativeCells(gameState.currentRound);
+        const info = getEndlessScalingInfo(gameState.currentRound);
+        endlessBadge.style.display = 'inline';
+        endlessBadge.innerText = '🌊 Endless';
+        endlessBadge.title = info.length > 0 ? 'Endless Mode:\n' + info.join('\n') : '';
+    } else {
+        endlessBadge.style.display = 'none';
+        endlessBadge.innerText = '';
+        endlessBadge.title = '';
+    }
     document.getElementById('target').innerText = gameState.targetScore;
     document.getElementById('hands').innerText = gameState.handsLeft;
     document.getElementById('discards').innerText = gameState.discardsLeft;

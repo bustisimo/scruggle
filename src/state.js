@@ -106,18 +106,28 @@ export const FONT_BAGS = {
 
 export const bookmarksRegistry = {
     // ── Bookmark pricing & gold economy ───────────────────────────────────
-    // Gold earned per submission ~ Math.floor(wordScore / 5).
-    // Typical earnings: 3-6 gold/turn, ~12-24 gold/round.
-    // By round 5 a player has earned ~60-120 gold total.
+    // Gold earned per submission: Math.floor(wordScore / 5).
+    // Typical earnings per hand (single word ~15-30 pts): 3-6 gold.
+    // With crosswords (2-3 words per hand, 30-60 pts): 6-12 gold.
+    // Average per round (4 hands): ~20-40 gold.
     //
-    // Price tiers:
-    //   15g (Focus):        Cheap starter. Pays for itself in ~2 rounds.
-    //   20g (Hoarder/Recycler):  Early-mid. Pays off in 4-7 rounds.
-    //   25g (Efficiency/Alchemist):  Mid-tier. Requires ~3-6 rounds to recoup.
-    //   30g (Touch/Patience/Arch):   Requires specific play to earn back.
-    //   35g (Collector/Capitalist):  Late-game compounding investments.
-    //   40g (Scholar):      High ceiling — 2x gold on long words.
-    //   45g (Lucky Seven):  Luxury — very rare 7-letter payoff.
+    // By round 5 a player has earned roughly 80-200 gold cumulative,
+    // but ~30-50g gets spent on early shop items, leaving ~50-120g
+    // for bookmarks by round 5.
+    //
+    // Price tiers — calibrated so players can afford 1-2 bookmarks
+    // by round 4, building a build-defining combo:
+    //   15g (Focus):         Cheap starter. 2 rounds to recoup.
+    //   20g (Hoarder/Recycler): Early-mid. Pays off in 3-5 rounds.
+    //   25g (Efficiency/Alchemist/Combo Master): Mid-tier. ~3-6 rounds.
+    //   30g (Touch/Patience/Arch/HandExp): Requires specific play to earn back.
+    //   35g (Collector/Capitalist):  Late-game compounding — buy round 8+.
+    //   40g (Scholar):       Premium — 2x gold on long words. Buy when flush.
+    //   45g (Lucky Seven):   Luxury. Only worth it if 7-letter words are realistic.
+    //
+    // For comparison: Fire/Ice ink packs cost 15g (3 tiles). A bookmarks
+    // at 15-25g competes with inks for the same gold pool. This feels right
+    // — bookmarks are permanent upgrades, inks are consumable tile buffs.
     // ──────────────────────────────────────────────────────────────────────
     'focus': {
         id: 'focus',
@@ -286,15 +296,42 @@ export const shopItems = [
     { id: 'pack_gold', name: 'Gold Ink Pack', desc: 'Apply Gold Ink to 2 random tiles in your bag. Gold Ink yields +5 Gold when scored.', price: 20 },
     { id: 'pack_void', name: 'Void Ink Pack', desc: 'Apply Void Ink to 2 random tiles in your bag. Void Ink adds +15 Score, but disintegrates the tile after scoring.', price: 20 },
     // ── Ink pack price notes ──────────────────────────────────────────────
-    // Fire/Ice   15g × 3 tiles: cheap, moderate power. Fair.
-    // Gold/Void  20g × 2 tiles: one-shot bonuses (5g or 15 score). Fair.
-    // Growth     25g × 2 tiles: compounds infinitely (+1 value per use).
-    //   ↑ was 20g — compounding value is OP at that price.
-    // Steel      30g × 2 tiles: unlocked tiles stay on board forever.
-    //   ↑ was 20g — permanent board control is game-changing.
-    //   At 30g it competes with mid-range bookmarks; about right.
-    // Prism      30g × 2 tiles: +1 word multiplier (stacks).
-    //   ↑ was 25g — word mult stacking is top-tier. 30g mirrors its impact.
+    // Comparative analysis (cost per tile × ongoing vs one-shot value):
+    //
+    // Tier 1 — Cheap activators (15g, 3 tiles = 5g/tile):
+    //   Fire:  Double letter value each use. Per-tile: +2-4 extra per use.
+    //          Ongoing. Best general-use ink at the price.
+    //   Ice:   Stays unlocked on submission then melts. Board control.
+    //          Ongoing for a round. Comparable to Fire.
+    //   Echo:  +2 score when reused in future submissions. For locked tiles.
+    //          Ongoing, but requires the tile to survive on board.
+    //
+    // Tier 2 — One-shot bonuses (20g, 2 tiles = 10g/tile):
+    //   Gold:  +5 gold per score. One-shot: +10g total per pack.
+    //          Pays for itself in savings if you score both tiles once.
+    //   Void:  +15 score per tile. One-shot: 30 total pts pack.
+    //          Single big burst vs Fire's ongoing doubling.
+    //   Storm: +3 bonus score to adjacent words. Ongoing but situational.
+    //          Best on center tiles where it touches 3-4 adjacent words.
+    //
+    // Tier 3 — Compounders (25g, 2 tiles = 12.5g/tile):
+    //   Growth: +1 value per use, compounds infinitely over rounds.
+    //           ↑ was 20g — compounding value is OP at that price.
+    //           At 25g, still the best long-term investment ink.
+    //
+    // Tier 4 — Game-changers (30g, 2 tiles = 15g/tile):
+    //   Steel:  Stay unlocked on board forever. Permanent board control.
+    //           ↑ was 20g — permanent board control is game-changing.
+    //           At 30g competes with mid-range bookmarks; about right.
+    //   Prism:  +1 word multiplier, stacks with other multipliers.
+    //           ↑ was 25g — word mult stacking is top-tier. 30g right.
+    //
+    // General rule: ink packs are consumable (tiles get locked/consumed),
+    // while bookmarks are permanent upgrades. Ink packs at 15-30g should
+    // feel like powerful one-round boosts; bookmarks at 15-45g are
+    // run-long investments. The overlap at 25-30g is deliberate —
+    // players choose between instant power (inks) and lasting value
+    // (bookmarks).
     // ──────────────────────────────────────────────────────────────────────
     { id: 'pack_growth', name: 'Growth Ink Pack', desc: 'Apply Growth Ink to 2 random tiles in your bag. Growth tiles permanently gain +1 value whenever scored.', price: 25 },
     { id: 'pack_steel', name: 'Steel Ink Pack', desc: 'Apply Steel Ink to 2 random tiles in your bag. Steel tiles remain on the board and stay unlocked forever, retaining Steel Ink.', price: 30 },
@@ -428,18 +465,42 @@ export function getSwapCost() { return 0; // No longer tracking swap costs via d
 
 export function getEndlessTargetScore(round) {
     // ── Round scaling balance ─────────────────────────────────────────────
-    // Early (1-4): round*30 = 30-120. Gentle intro — one 4-5 letter word per
-    // hand (~30 pts) is enough. Players are learning.
+    // Formula:
+    //   Rounds 1-4:  round × 30    (gentle intro — 30, 60, 90, 120)
+    //   Rounds 5-20: round × 24 + 30 (steady climb — 150 → 510)
+    //   Rounds 21+:  round × 35 + r² × 1.5 (quadratic — brutal)
     //
-    // Mid (5-20): round*24+30. The old round*30 curve became punishing here:
-    //   Round 6 (Word Eater boss): 180 → 174 pts  (was punishing with 2-3 letter words)
-    //   Round 10:                 300 → 270 pts  (still challenging, needs 5-6 letter words or multipliers)
-    //   Round 15:                 450 → 390 pts  (bookmarks + inks should help by now)
-    // The gentler slope keeps the game winnable at higher rounds while still
-    // demanding competence — average hand needs ~45-65 pts with 4 submissions.
+    // Per-hand scoring estimates (standard 7-tile hand):
+    //   Single 3-letter word:     12-20 pts  (no crosswords)
+    //   Single 4-letter word:     20-35 pts
+    //   Crossword (2 short words): 25-50 pts
+    //   Full hand use (bingo):    60-100+ pts (rare without inks)
     //
-    // Endless (21+): quadratic scaling with a gentler coefficient than the
-    // old formula. Gets brutal but rewards deep runs and smart ink use.
+    // With 4 hands per round, a typical competitive hand is ~40-60 pts
+    // (1-2 words, one with a DW/TL boost). Average across all players:
+    //
+    //   Round  | Target | pts/hand needed | Feasibility
+    //   ------ | ------ | --------------- | -----------
+    //    1     |  30    |  7.5             | One 3-letter word. Very easy.
+    //    3     |  90    | 22.5             | 3-letter + crossword. Easy.
+    //    5     | 150    | 37.5             | 4-letter word + multiplier. Fair.
+    //    6     | 174    | 43.5             | Word Eater boss reduces to 113.
+    //   10     | 270    | 67.5             | Needs bookmarks + inks. Challenging.
+    //   15     | 390    | 97.5             | Requires strong build. Hard.
+    //   20     | 510    | 127.5            | Near-endgame. Very hard.
+    //   25     | 1812   | 453.0            | Quadratic scaling kicks in. Brutal.
+    //
+    // Boss adjustments (in bosses.js):
+    //   Round  3 Ink Thief:   no target change (steals tiles instead)
+    //   Round  6 Word Eater:  ×0.65 (can only use 2-3 letter words)
+    //   Round  9 Gilded Golem: ×1.5 (higher target, double gold)
+    //   Round 12 Time Warp:   handsLeft=3 (fewer submissions, triple gold)
+    //   Round 15 The Mirror:  no target change (mirrored tiles help)
+    //   Round 18 The Void:    ×0.75 (consumes tiles, lower target)
+    //
+    // The round×24+30 slope was chosen because round×30 became punishing
+    // past round 5 — average players hit a wall. The gentler slope keeps
+    // the game winnable through round 15 while still demanding competence.
     // ──────────────────────────────────────────────────────────────────────
     if (round < 5) return round * 30;
     if (round <= 20) return Math.floor(round * 24 + 30);

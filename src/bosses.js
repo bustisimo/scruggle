@@ -74,15 +74,30 @@ export const BOSSES = {
             // ── Word Eater target balance ────────────────────────────────
             // This boss restricts submissions to 2-3 letter words — any word
             // of 4+ letters is eaten (tiles lost forever). With only short
-            // words, typical scoring drops to ~10-20 pts per 3-letter word
-            // (with crosswords and multipliers, maybe 25-35 per hand).
+            // words, typical scoring drops significantly.
             //
-            // At round 6, without adjustment, target would be ~174 pts.
-            // With 4 hands × 30 pts avg = 120 pts — short by ~54 pts.
-            // Reducing target by 30% brings it to ~122 pts, achievable
-            // with good crosswords, board multipliers, and locked tiles.
+            // Realistic scoring estimates with 2-3 letter words only:
+            //   2-letter word:    4-8  pts (two common letters ± TL)
+            //   3-letter word:   12-20 pts (three letters; avg value ~5)
+            //   With crosswords: 20-40 pts per hand (2 overlapping short words)
+            //
+            // At round 6, base target = 174 (6×24+30). With 70% factor:
+            //   target = 174 × 0.70 = 122
+            //   4 hands × avg 30 pts (single 3-letter + crosswords) = 120 pts
+            //   → Barely achievable with good play and board multipliers.
+            //
+            // At 60%: target = 174 × 0.60 = 104
+            //   → Comfortable — 4 × 26 pts avg, easily doable with crosswords
+            //
+            // At 65%: target = 174 × 0.65 = 113
+            //   → Sweet spot — requires consistent short-word crosswords
+            //     without being punishing. Rewards players who build
+            //     intersecting 2-3 letter words and use board multipliers.
+            //
+            // The boss is supposed to feel restrictive, not impossible.
+            // 65% (113 pts at round 6) is challenging but winnable.
             // ──────────────────────────────────────────────────────────────
-            state.targetScore = Math.ceil(state.targetScore * 0.7);
+            state.targetScore = Math.ceil(state.targetScore * 0.65);
         },
         onSubmission(state) {
             // Return empty — the "eaten" logic is in main.js where we check word length

@@ -454,12 +454,31 @@ function renderUI() {
         scoreEl.classList.add('score-pop');
     }
 
-    // Gold pulse animation when gold changes
+    // Gold pulse animation when gold changes — spawn coin particles
     const goldEl = document.getElementById('gold');
     if (prevGold !== '' + gameState.gold) {
         goldEl.classList.remove('gold-pulse');
         void goldEl.offsetWidth;
         goldEl.classList.add('gold-pulse');
+        // Spawn floating coin particles
+        if (gameState.gold > parseInt(prevGold || '0')) {
+            const goldRect = goldEl.getBoundingClientRect();
+            const coinChars = ['🪙', '✦', '●'];
+            for (let i = 0; i < 4; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'gold-coin-particle';
+                coin.innerText = coinChars[i % coinChars.length];
+                const drift = (Math.random() - 0.5) * 50;
+                coin.style.cssText = `
+                    left: ${goldRect.left + goldRect.width / 2 + (Math.random() - 0.5) * 40}px;
+                    top: ${goldRect.top}px;
+                    --drift: ${drift}px;
+                    font-size: ${12 + Math.random() * 10}px;
+                `;
+                document.body.appendChild(coin);
+                setTimeout(() => coin.remove(), 1000);
+            }
+        }
     }
 
     // Progress bar animation
@@ -1625,6 +1644,26 @@ function spawnConfetti() {
             --spin: ${spin}deg;
         `;
         container.appendChild(piece);
+    }
+    // Add sparkle burst at confetti origin
+    const burstCount = 16;
+    for (let i = 0; i < burstCount; i++) {
+        const spark = document.createElement('div');
+        spark.className = 'confetti-sparkle';
+        const angle = (Math.PI * 2 / burstCount) * i + (Math.random() - 0.5) * 0.5;
+        const dist = 20 + Math.random() * 40;
+        const sx = Math.cos(angle) * dist;
+        const sy = Math.sin(angle) * dist;
+        const hue = [330, 50, 190, 270][i % 4];
+        spark.style.cssText = `
+            left: 50%;
+            top: 30%;
+            color: hsl(${hue}, 90%, 70%);
+            --sx: ${sx}px;
+            --sy: ${sy}px;
+            animation-delay: ${Math.random() * 0.3}s;
+        `;
+        container.appendChild(spark);
     }
     setTimeout(() => {
         if (container) container.innerHTML = '';

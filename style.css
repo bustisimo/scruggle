@@ -2432,6 +2432,159 @@ body::before {
     100% { background: rgba(76, 175, 80, 0.28); border-color: rgba(76, 175, 80, 0.65); box-shadow: inset 0 0 22px rgba(76, 175, 80, 0.4), 0 0 18px rgba(76, 175, 80, 0.3); }
 }
 
+/* ===== 1. Placement ripple propagation — rings expand to adjacent cells ===== */
+.cell.placement-ripple {
+    position: relative;
+    z-index: 2;
+}
+.cell.placement-ripple::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 8px;
+    border: 2px solid rgba(76, 175, 80, 0.6);
+    animation: ripple-expand 0.5s ease-out forwards;
+    pointer-events: none;
+    z-index: 15;
+}
+@keyframes ripple-expand {
+    0% { transform: scale(0.3); opacity: 1; border-width: 3px; }
+    60% { opacity: 0.4; border-width: 1px; }
+    100% { transform: scale(1.15); opacity: 0; border-width: 0px; }
+}
+
+/* ===== 2. Center star — rotating golden halo ring ===== */
+.cell.center .center-halo-ring {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: calc(100% + 12px);
+    height: calc(100% + 12px);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 4;
+    animation: halo-rotate 4s linear infinite;
+    box-sizing: border-box;
+}
+.cell.center .center-halo-ring::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.7);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+.cell.center .center-halo-ring::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+}
+@keyframes halo-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== 3. Enhanced hand deal — subtle stagger + rotation ===== */
+#hand.hand-dealing {
+    /* Container-level animation context for cascade timing */
+}
+.tile.hand-enter {
+    animation: hand-deal-slide 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+/* Enhanced hand-tile-slide with more dramatic "dealt" feel */
+@keyframes hand-deal-slide {
+    0% { transform: translateX(120px) scale(0.5) rotate(12deg); opacity: 0; }
+    30% { transform: translateX(-5px) scale(1.05) rotate(-2deg); opacity: 1; }
+    55% { transform: translateX(3px) scale(0.98) rotate(1deg); }
+    75% { transform: translateX(-1px) scale(1.01) rotate(-0.3deg); }
+    100% { transform: translateX(0) scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* ===== 4. Enhanced invalid shake — global red flash ===== */
+#board.board-shake.board-shake-enhanced {
+    animation: board-shake 0.6s ease-in-out;
+}
+/* Full-page red overlay during invalid attempt */
+#board.board-shake ~ .shake-flash-overlay {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(198,40,40,0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 9999;
+    animation: shake-flash-fade 0.5s ease-out forwards;
+}
+@keyframes shake-flash-fade {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 0; }
+}
+/* Red particle burst from each invalid tile */
+.tile.invalid-shake::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.tile.invalid-shake .shake-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 25;
+    animation: shake-particle-burst 0.5s ease-out forwards;
+}
+@keyframes shake-particle-burst {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--sx, 20px), var(--sy, -20px)) scale(0.1); }
+}
+
+/* ===== 5. Progress bar milestone diamonds ===== */
+.progress-milestone {
+    position: absolute;
+    top: -6px;
+    width: 8px;
+    height: 8px;
+    background: rgba(90, 46, 23, 0.3);
+    border: 1px solid rgba(90, 46, 23, 0.2);
+    transform: translateX(-50%) rotate(45deg);
+    z-index: 5;
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    pointer-events: none;
+}
+.progress-milestone.reached {
+    background: rgba(76, 175, 80, 0.7);
+    border-color: rgba(76, 175, 80, 0.9);
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+}
+.progress-milestone.reached.complete {
+    background: rgba(255, 215, 0, 0.8);
+    border-color: rgb(255, 215, 0);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+/* Milestone pop-in when bar passes it */
+.progress-milestone.pop {
+    animation: milestone-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes milestone-pop {
+    0% { transform: translateX(-50%) rotate(45deg) scale(1); }
+    40% { transform: translateX(-50%) rotate(45deg) scale(1.5); }
+    100% { transform: translateX(-50%) rotate(45deg) scale(1); }
+}
+
 /* Connection line between the hovered cell and valid placements */
 .cell.valid-placement .placement-connector {
     display: none;

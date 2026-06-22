@@ -479,6 +479,46 @@ function renderUI() {
     fill.classList.toggle('high-pulse', pct >= 75 && pct < 100);
     fill.classList.toggle('complete', pct >= 100);
 
+    // Progress bar milestone diamond markers at 25/50/75/100%
+    const container = document.getElementById('progress-bar-container');
+    if (container) {
+        // Create milestone markers if they don't exist
+        let milestoneContainer = container.querySelector('.milestone-container');
+        if (!milestoneContainer) {
+            milestoneContainer = document.createElement('div');
+            milestoneContainer.className = 'milestone-container';
+            milestoneContainer.style.cssText = 'position: absolute; inset: 0; pointer-events: none; z-index: 5;';
+            const milestones = [25, 50, 75, 100];
+            milestones.forEach(m => {
+                const diamond = document.createElement('div');
+                diamond.className = 'progress-milestone';
+                diamond.dataset.milestone = m;
+                diamond.style.left = m + '%';
+                diamond.title = m + '%';
+                milestoneContainer.appendChild(diamond);
+            });
+            container.appendChild(milestoneContainer);
+        }
+        // Update milestone states
+        const diamonds = milestoneContainer.querySelectorAll('.progress-milestone');
+        diamonds.forEach(d => {
+            const milestoneVal = parseFloat(d.dataset.milestone);
+            const wasReached = d.classList.contains('reached');
+            const isReached = pct >= milestoneVal;
+            if (isReached && !wasReached) {
+                // Just crossed this milestone — pop it in
+                d.classList.add('reached', 'pop');
+                if (pct >= 100) d.classList.add('complete');
+                setTimeout(() => d.classList.remove('pop'), 500);
+            } else if (isReached) {
+                d.classList.add('reached');
+                if (pct >= 100) d.classList.add('complete');
+            } else {
+                d.classList.remove('reached', 'complete');
+            }
+        });
+    }
+
     const bagCountBadge = document.getElementById('bag-count-badge');
     if (bagCountBadge) {
         const prev = bagCountBadge.innerText;
@@ -755,20 +795,54 @@ function setupEventListeners() {
         if (!validation.allValid) {
             audio.invalidWord();
             const boardEl = document.getElementById('board');
-            boardEl.classList.remove('board-shake');
+            boardEl.classList.remove('board-shake', 'board-shake-enhanced');
             void boardEl.offsetWidth;
-            boardEl.classList.add('board-shake');
-            // Pulse individual invalid tiles
+            boardEl.classList.add('board-shake', 'board-shake-enhanced');
+            // Remove any existing flash overlay
+            const existingFlash = document.querySelector('.shake-flash-overlay');
+            if (existingFlash) existingFlash.remove();
+            // Add full-page red flash overlay
+            const flashOverlay = document.createElement('div');
+            flashOverlay.className = 'shake-flash-overlay';
+            document.body.appendChild(flashOverlay);
+            setTimeout(() => {
+                if (flashOverlay.parentNode) flashOverlay.remove();
+            }, 500);
+            // Pulse individual invalid tiles with red particle burst
             const invalidTiles = boardEl.querySelectorAll('.tile.invalid');
             invalidTiles.forEach(el => {
                 el.classList.remove('invalid-shake');
                 void el.offsetWidth;
                 el.classList.add('invalid-shake');
+                // Spawn red burst particles from each invalid tile
+                const rect = el.getBoundingClientRect();
+                const boardRect = boardEl.getBoundingClientRect();
+                const cx = rect.left - boardRect.left + rect.width / 2;
+                const cy = rect.top - boardRect.top + rect.height / 2;
+                for (let i = 0; i < 4; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'shake-particle';
+                    const angle = (Math.PI * 2 / 4) * i + (Math.random() - 0.5) * 0.8;
+                    const dist = 15 + Math.random() * 20;
+                    const dx = Math.cos(angle) * dist;
+                    const dy = Math.sin(angle) * dist;
+                    p.style.cssText = `
+                        left: ${cx}px;
+                        top: ${cy}px;
+                        background: hsl(${0 + Math.random() * 30}, 90%, ${50 + Math.random() * 30}%);
+                        --sx: ${dx}px;
+                        --sy: ${dy}px;
+                    `;
+                    p.style.setProperty('--sx', dx + 'px');
+                    p.style.setProperty('--sy', dy + 'px');
+                    boardEl.appendChild(p);
+                }
             });
             setTimeout(() => {
-                boardEl.classList.remove('board-shake');
+                boardEl.classList.remove('board-shake', 'board-shake-enhanced');
                 invalidTiles.forEach(el => el.classList.remove('invalid-shake'));
-            }, 550);
+                boardEl.querySelectorAll('.shake-particle').forEach(el => el.remove());
+            }, 600);
             return;
         }
 

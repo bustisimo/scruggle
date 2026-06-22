@@ -51,6 +51,22 @@ export function renderBoard(onCellClick, renderCallback) {
     boardEl.innerHTML = '';
     const validation = validateBoard();
 
+    /**
+     * Get the 4-directional neighbors of a cell. Used for ripple propagation.
+     */
+    function getNeighbors(x, y) {
+        const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        const result = [];
+        for (const [dx, dy] of dirs) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                result.push({ x: nx, y: ny });
+            }
+        }
+        return result;
+    }
+
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             const cell = document.createElement('div');
@@ -64,6 +80,10 @@ export function renderBoard(onCellClick, renderCallback) {
             const startY = gameState.startCell ? gameState.startCell.y : 3;
             if (x === startX && y === startY) {
                 cell.classList.add('center');
+                // Add the rotating golden halo ring around center star
+                const halo = document.createElement('div');
+                halo.className = 'center-halo-ring';
+                cell.appendChild(halo);
             }
 
             cell.onclick = () => onCellClick(x, y);
@@ -82,6 +102,20 @@ export function renderBoard(onCellClick, renderCallback) {
                         tile._animPlaced = true;
                         // Spawn burst particles around the tile
                         spawnPlaceParticles(tileEl);
+                        // Ripple propagation — brief ring on adjacent empty cells
+                        const neighbors = getNeighbors(x, y);
+                        neighbors.forEach(n => {
+                            if (!gameState.board[n.y][n.x]) {
+                                const neighborIdx = n.y * GRID_SIZE + n.x;
+                                const neighborCell = boardEl.children[neighborIdx];
+                                if (neighborCell) {
+                                    neighborCell.classList.add('placement-ripple');
+                                    setTimeout(() => {
+                                        neighborCell.classList.remove('placement-ripple');
+                                    }, 550);
+                                }
+                            }
+                        });
                         // Remove animation class after it finishes so it doesn't interfere with hover
                         setTimeout(() => {
                             const els = document.querySelectorAll('#board .tile.just-placed');

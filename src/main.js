@@ -187,7 +187,10 @@ function setupDictionarySearch() {
                 const matchLabel = matches.length >= 200 ? '200+' : matches.length;
                 const matchPct = ((matches.length / totalDictSize) * 100).toFixed(2);
                 if (matchCount) {
-                    matchCount.innerText = `${matchLabel} results`;
+                    const displayText = matches.length >= 200
+                        ? `${matchLabel} / ${totalDictSize}`
+                        : `${matches.length} / ${totalDictSize}`;
+                    matchCount.innerText = displayText;
                     matchCount.classList.remove('highlighted');
                     void matchCount.offsetWidth;
                     if (matches.length > 0) matchCount.classList.add('highlighted');

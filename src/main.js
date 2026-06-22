@@ -288,6 +288,7 @@ function initRound(isNewRun) {
     const boss = getBossForRound(gameState.currentRound, gameState.defeatedBosses);
     if (boss) {
         gameState.activeBoss = boss.id;
+        boss.onBossStart(gameState);
         saveGame();
         showBossIntro(boss);
         return;
@@ -706,6 +707,12 @@ function setupEventListeners() {
             gameState.gold += doubledGold;
         }
 
+        // Boss mechanic: The Time Warp triples gold
+        if (gameState.activeBoss === 'time_warp') {
+            const tripledGold = turnGold * 2;
+            gameState.gold += tripledGold;
+        }
+
         updateStats(gameState.currentRound, turnGold, turnWordsCount);
 
         // Check achievements after submission
@@ -734,6 +741,9 @@ function setupEventListeners() {
                     // Word Eater: remove tiles from eaten words
                     if (eatenTiles.has(`${x},${y}`)) {
                         gameState.board[y][x] = null;
+                    // Boss: The Void — all non-locked tiles are consumed
+                    } else if (gameState.activeBoss === 'the_void') {
+                        gameState.board[y][x] = null;
                     } else if (tile.ink === 'void') {
                         gameState.board[y][x] = null;
                     } else if (tile.ink === 'ice') {
@@ -750,6 +760,25 @@ function setupEventListeners() {
             }
         }
         drawTiles();
+
+        // Boss mechanic: The Mirror — place mirrored tiles at opposite positions
+        if (gameState.activeBoss === 'the_mirror') {
+            const mirrorResult = BOSSES.the_mirror.onSubmission(gameState);
+            if (mirrorResult.mirroredPairs && mirrorResult.mirroredPairs.length > 0) {
+                for (const pair of mirrorResult.mirroredPairs) {
+                    const sourceTile = gameState.board[pair.from.y][pair.from.x];
+                    if (sourceTile) {
+                        gameState.board[pair.to.y][pair.to.x] = {
+                            letter: sourceTile.letter,
+                            value: sourceTile.value,
+                            isLocked: false
+                        };
+                    }
+                }
+            }
+        }
+
+        drawTiles();
         saveGame();
         renderUI();
 
@@ -758,6 +787,17 @@ function setupEventListeners() {
         if (gameState.activeBoss === 'ink_thief') {
             const result = BOSSES.ink_thief.onSubmission(gameState);
             if (result.message) bossMessage = result.message;
+        }
+
+        // Boss mechanic: The Void consumes all
+        if (gameState.activeBoss === 'the_void') {
+            bossMessage = '🕳️ The Void consumed this submission\'s tiles!';
+        }
+
+        // Boss mechanic: The Mirror reflection message
+        if (gameState.activeBoss === 'the_mirror') {
+            const mirrorResult = BOSSES.the_mirror.onSubmission(gameState);
+            if (mirrorResult.message) bossMessage = mirrorResult.message;
         }
 
         // Show the scoring animation

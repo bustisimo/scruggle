@@ -84,7 +84,7 @@ export const BOSSES = {
    ╔═════╗
    ║ 💎  ║
    ╚═════╝
-    /||||\\
+    /|||\\
      /  \\
   `,
         introText: 'The Gilded Golem raises the stakes — target is 1.5x higher, but all gold earnings are doubled!',
@@ -99,6 +99,108 @@ export const BOSSES = {
         },
         onSubmission(state) {
             return { message: null, goldMultiplier: 2 };
+        }
+    },
+
+    time_warp: {
+        id: 'time_warp',
+        name: 'The Time Warp',
+        round: 12,
+        emoji: '⏳',
+        art: `
+    ⏳
+  ╔═════╗
+  ║ ⌛  ║
+  ╚═════╝
+   /|||\\
+    / \\
+  `,
+        introText: 'The Time Warp distorts time itself — fewer moves, but every gold find is tripled!',
+        rules: [
+            'You only get 3 hands instead of 4.',
+            'All gold earned from submissions is TRIPLED (3x).',
+            'Race against the clock with fewer moves but massive payouts!'
+        ],
+        reward: { type: 'time_essence', desc: 'Permanent +1 Hand per Round Start' },
+        onBossStart(state) {
+            state.handsLeft = 3;
+        },
+        onSubmission(state) {
+            return { message: null, goldMultiplier: 3 };
+        }
+    },
+
+    the_mirror: {
+        id: 'the_mirror',
+        name: 'The Mirror',
+        round: 15,
+        emoji: '🪞',
+        art: `
+    🪞
+  ╔═════╗
+  ║ 🃏 ║
+  ╚═════╝
+   /|||\\
+    / \\
+  `,
+        introText: 'The Mirror reflects your every move! Placed tiles appear mirrored on the opposite side of the board.',
+        rules: [
+            'Every tile you place creates a mirrored copy at the opposite board position.',
+            'Mirrored tiles count toward word formation and scoring.',
+            'Work with the reflection to meet the target score!'
+        ],
+        reward: { type: 'mirror_shard', desc: 'Mirror Shard — doubles one submission score next round' },
+        onBossStart(state) {
+            // No special setup
+        },
+        onSubmission(state) {
+            // Mirror logic handled in main.js — returns info about mirrored tiles
+            const mirroredPairs = [];
+            for (let y = 0; y < 7; y++) {
+                for (let x = 0; x < 7; x++) {
+                    const tile = state.board[y][x];
+                    const mx = 6 - x;
+                    const my = 6 - y;
+                    if (tile && !tile.isLocked && !state.board[my][mx]) {
+                        mirroredPairs.push({ from: { x, y }, to: { x: mx, y: my } });
+                    }
+                }
+            }
+            return {
+                message: mirroredPairs.length > 0
+                    ? `🪞 Mirror reflects ${mirroredPairs.length} tile${mirroredPairs.length > 1 ? 's' : ''}!`
+                    : null,
+                mirroredPairs
+            };
+        }
+    },
+
+    the_void: {
+        id: 'the_void',
+        name: 'The Void',
+        round: 18,
+        emoji: '🕳️',
+        art: `
+    🕳️
+  ╔═════╗
+  ║ ∞  ║
+  ╚═════╝
+   /|||\\
+    / \\
+  `,
+        introText: 'The Void consumes everything — each submission devours all placed tiles forever, but the target is lower.',
+        rules: [
+            'After each submission, ALL non-locked tiles are consumed by the void and lost permanently.',
+            'Tiles do NOT return to your bag — gone forever.',
+            'Target score is reduced by 25% to compensate.'
+        ],
+        reward: { type: 'void_gold', desc: '200 Gold from the Void\'s remains' },
+        onBossStart(state) {
+            state.targetScore = Math.floor(state.targetScore * 0.75);
+        },
+        onSubmission(state) {
+            // The actual tile destruction is handled in main.js
+            return { message: null, voidActive: true };
         }
     }
 };
@@ -149,6 +251,18 @@ export function applyBossReward(state, boss) {
         case 'gold_bonus': {
             state.gold += 100;
             return { message: 'The Golem crumbles, dropping 100 gold! 💰' };
+        }
+        case 'time_essence': {
+            state.handSize += 1;
+            return { message: 'You absorb Time Essence — hand size permanently +1! ⏳' };
+        }
+        case 'mirror_shard': {
+            state.inventory.push('mirror_shard_buff');
+            return { message: 'You claim a Mirror Shard — next round starts with 2x score on one submission! 🪞' };
+        }
+        case 'void_gold': {
+            state.gold += 200;
+            return { message: 'The Void collapses, showering 200 gold! 🕳️💰' };
         }
         default:
             return { message: 'Boss defeated!' };

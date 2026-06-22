@@ -35,18 +35,16 @@ function renderTitleTiles() {
     container.innerHTML = '';
 
     const title = "SCRUGGLE";
-    const inks = ['fire', 'ice', 'gold', 'void', null, null, null, null];
     const letters = title.split('');
 
     let draggedTitleTile = null;
 
     letters.forEach((letter, i) => {
         try {
-            const ink = inks[Math.floor(Math.random() * inks.length)];
             const distribution = FONT_BAGS.standard.distribution;
             const val = distribution[letter] ? distribution[letter].val : 1;
 
-            const tile = { letter, value: val, ink };
+            const tile = { letter, value: val, ink: null };
             const tileEl = createTileUI(tile);
             tileEl.classList.add('title-tile');
 

@@ -18,10 +18,12 @@ import audio from './audio.js';
 function fitBoard() {
     const root = document.documentElement;
     const pad = 40; // side padding
-    const vertOverhead = 200; // scoreboard + stats + hand + controls + gaps
+    const vertOverhead = 260; // scoreboard + stats + hand + controls + safari bar + gaps
 
-    const maxCellW = Math.floor((window.innerWidth - pad) / 7);
-    const maxCellH = Math.floor((window.innerHeight - vertOverhead) / 7);
+    const vw = window.innerWidth;
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const maxCellW = Math.floor((vw - pad) / 7);
+    const maxCellH = Math.floor((vh - vertOverhead) / 7);
     let cell = Math.min(maxCellW, maxCellH, 60); // cap at desktop default
     cell = Math.max(cell, 28); // never smaller than usable
 
@@ -32,6 +34,9 @@ function fitBoard() {
 async function init() {
     fitBoard();
     window.addEventListener('resize', () => { fitBoard(); });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => { fitBoard(); });
+    }
     loadAchievements();
     loadDictionary(() => {
         renderUI();

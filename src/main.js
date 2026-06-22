@@ -1277,6 +1277,8 @@ function setupEventListeners() {
     // Mute toggle
     const muteBtn = document.getElementById('mute-btn');
     if (muteBtn) {
+        // Initialize from saved state
+        muteBtn.innerText = audio.isMuted() ? '🔇' : '🔊';
         muteBtn.onclick = () => {
             const muted = audio.toggle();
             muteBtn.innerText = muted ? '🔇' : '🔊';

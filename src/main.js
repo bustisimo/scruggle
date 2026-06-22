@@ -41,49 +41,51 @@ function renderTitleTiles() {
     let draggedTitleTile = null;
 
     letters.forEach((letter, i) => {
-        const ink = inks[Math.floor(Math.random() * inks.length)];
-        // Use standard Scrabble values for the title letters
-        const distribution = FONT_BAGS.standard.distribution;
-        const val = distribution[letter] ? distribution[letter].val : 1;
+        try {
+            const ink = inks[Math.floor(Math.random() * inks.length)];
+            const distribution = FONT_BAGS.standard.distribution;
+            const val = distribution[letter] ? distribution[letter].val : 1;
 
-        const tile = { letter, value: val, ink };
-        const tileEl = createTileUI(tile);
-        tileEl.classList.add('title-tile');
-        // Add a slight random rotation for tabletop feel
-        const rot = (Math.random() * 6 - 3).toFixed(1);
-        tileEl.style.transform += ` rotate(${rot}deg)`;
+            const tile = { letter, value: val, ink };
+            const tileEl = createTileUI(tile);
+            tileEl.classList.add('title-tile');
+            const rot = (Math.random() * 6 - 3).toFixed(1);
+            tileEl.style.transform += ` rotate(${rot}deg)`;
 
-        // HTML5 Drag and Drop for playful rearranging
-        tileEl.setAttribute('draggable', 'true');
-        tileEl.addEventListener('dragstart', (e) => {
-            draggedTitleTile = tileEl;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', '');
-            tileEl.classList.add('dragging');
-        });
-        tileEl.addEventListener('dragend', () => {
-            tileEl.classList.remove('dragging');
-            draggedTitleTile = null;
-        });
-        tileEl.addEventListener('dragover', (e) => {
-            if (draggedTitleTile && draggedTitleTile !== tileEl) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                const children = Array.from(container.children);
-                const draggedIndex = children.indexOf(draggedTitleTile);
-                const targetIndex = children.indexOf(tileEl);
-                if (draggedIndex < targetIndex) {
-                    container.insertBefore(draggedTitleTile, tileEl.nextSibling);
-                } else {
-                    container.insertBefore(draggedTitleTile, tileEl);
+            // HTML5 Drag and Drop for playful rearranging
+            tileEl.setAttribute('draggable', 'true');
+            tileEl.addEventListener('dragstart', (e) => {
+                draggedTitleTile = tileEl;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', '');
+                tileEl.classList.add('dragging');
+            });
+            tileEl.addEventListener('dragend', () => {
+                tileEl.classList.remove('dragging');
+                draggedTitleTile = null;
+            });
+            tileEl.addEventListener('dragover', (e) => {
+                if (draggedTitleTile && draggedTitleTile !== tileEl) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    const children = Array.from(container.children);
+                    const draggedIndex = children.indexOf(draggedTitleTile);
+                    const targetIndex = children.indexOf(tileEl);
+                    if (draggedIndex < targetIndex) {
+                        container.insertBefore(draggedTitleTile, tileEl.nextSibling);
+                    } else {
+                        container.insertBefore(draggedTitleTile, tileEl);
+                    }
                 }
-            }
-        });
-        tileEl.addEventListener('drop', (e) => {
-            e.preventDefault();
-        });
+            });
+            tileEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+            });
 
-        container.appendChild(tileEl);
+            container.appendChild(tileEl);
+        } catch (e) {
+            console.warn('Failed to render title tile', letter, e);
+        }
     });
 }
 
@@ -409,7 +411,6 @@ function renderUI() {
 
     document.getElementById('score').innerText = gameState.score;
     document.getElementById('gold').innerText = gameState.gold;
-    document.getElementById('bag-count').innerText = gameState.bag.length;
     document.getElementById('round').innerText = gameState.currentRound + (gameState.currentRound >= 21 ? ' - Endless' : '');
     // Endless scaling info tooltip
     const roundEl = document.getElementById('round');
@@ -614,35 +615,7 @@ function renderUI() {
     renderBoard(onCellClick, renderUI);
     renderHand(onTileClick, renderUI);
 
-    // Bag progress bar — compute against the font bag's total starting count
-    const activeBag = FONT_BAGS[gameState.selectedFontBagId || 'standard'] || FONT_BAGS.standard;
-    const totalTiles = Object.values(activeBag.distribution).reduce((s, d) => s + d.count, 0);
-    const currentCount = gameState.bag.length;
-    const pctRemaining = totalTiles > 0 ? (currentCount / totalTiles) * 100 : 0;
-
-    const bagProgressFill = document.getElementById('bag-progress-fill');
-    if (bagProgressFill) {
-        bagProgressFill.style.width = pctRemaining + '%';
-        // Color coding
-        const colorClass = pctRemaining > 50 ? 'bag-progress-green' : (pctRemaining > 25 ? 'bag-progress-yellow' : 'bag-progress-red');
-        bagProgressFill.className = 'bag-progress-fill ' + colorClass;
-    }
-
-    // Bag tooltip with exact distribution
-    const bagCountEl = document.getElementById('bag-count');
-    if (bagCountEl) {
-        const counts = computeBagLetterCounts();
-        const tooltip = buildBagDistributionText(counts);
-        bagCountEl.title = tooltip || 'Bag is empty';
-    }
-
-    // Bag progress bar tooltip with distribution
-    const bagProgressContainer = document.getElementById('bag-progress-container');
-    if (bagProgressContainer) {
-        const bagCounts = computeBagLetterCounts();
-        const tooltip = buildBagDistributionText(bagCounts);
-        bagProgressContainer.title = tooltip || 'Bag is empty';
-    }
+    // Bag badge tooltip with distribution
 
     const drawer = document.getElementById('bag-drawer');
     if (drawer && drawer.classList.contains('open')) {
@@ -1321,12 +1294,6 @@ function setupEventListeners() {
             saveGame();
             renderUI();
         };
-    }
-
-    // Bag progress bar cursor hint
-    const bagProgressContainer = document.getElementById('bag-progress-container');
-    if (bagProgressContainer) {
-        bagProgressContainer.style.cursor = 'pointer';
     }
 
     document.getElementById('next-round-btn').onclick = () => {

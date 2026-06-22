@@ -1,4 +1,4 @@
-import { gameState, GRID_SIZE, shopItems, shuffle, FONT_BAGS } from './state.js';
+import { gameState, GRID_SIZE, shopItems, shuffle, FONT_BAGS, getSwapCost } from './state.js';
 import { validateBoard } from './rules.js';
 
 export function renderInventory() {

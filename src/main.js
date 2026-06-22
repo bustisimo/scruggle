@@ -146,6 +146,9 @@ function showStartScreen() {
     document.getElementById('bag-selection-view').style.display = 'none';
     document.getElementById('start-screen').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
+
+    // Render new lifetime stats, personal bests, and submission history
+    renderStatsDrawer();
 }
 
 function setupDictionarySearch() {
@@ -1325,6 +1328,15 @@ function setupEventListeners() {
         muteBtn.onclick = () => {
             const muted = audio.toggle();
             muteBtn.innerText = muted ? '🔇' : '🔊';
+        };
+    }
+
+    // Stats drawer (gameplay button)
+    const viewStatsGameBtn = document.getElementById('view-stats-game-btn');
+    if (viewStatsGameBtn) {
+        viewStatsGameBtn.onclick = () => {
+            renderStatsDrawer();
+            openDrawer(statsDrawer);
         };
     }
 

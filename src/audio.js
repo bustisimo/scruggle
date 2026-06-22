@@ -1,328 +1,258 @@
 /**
- * AudioManager — Web Audio API sound effects for Scruggle.
- * Singleton. Synthesizes all sounds (no external files).
+ * AudioManager — lightweight synthesized sound effects via Web Audio API.
+ * Singleton. No external files required. All sounds are procedurally generated.
  */
+class AudioManager {
+    constructor() {
+        if (AudioManager._instance) return AudioManager._instance;
+        AudioManager._instance = this;
 
-let instance = null;
+        this._ctx = null;
+        this._muted = false;
 
-export class AudioManager {
-  constructor() {
-    if (instance) return instance;
-    /** @type {AudioContext|null} */
-    this._ctx = null;
-    this._muted = false;
-    instance = this;
-  }
+        // Restore mute preference
+        try {
+            this._muted = localStorage.getItem('scruggle_muted') === 'true';
+        } catch (_) { /* localStorage unavailable */ }
 
-  /** @returns {AudioContext} */
-  _ctx_ensure() {
-    if (!this._ctx) {
-      this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    // Resume if suspended (browser autoplay policy)
-    if (this._ctx.state === 'suspended') {
-      this._ctx.resume().catch(() => {});
-    }
-    return this._ctx;
-  }
-
-  get muted() { return this._muted; }
-
-  /** Toggle mute. Returns new mute state. */
-  toggle() {
-    this._muted = !this._muted;
-    return this._muted;
-  }
-
-  /** Set mute explicitly. */
-  setMute(v) { this._muted = !!v; }
-
-  // ─── helpers ────────────────────────────────────────
-
-  /**
-   * Play a tone (or chord) with ADSR envelope.
-   * @param {number[]} freqs  — frequencies in Hz
-   * @param {object} opts
-   * @param {number} [opts.duration=0.15]
-   * @param {number} [opts.type='sine']
-   * @param {number} [opts.volume=0.15]
-   * @param {number} [opts.attack=0.005]
-   * @param {number} [opts.decay=0.02]
-   * @param {number} [opts.sustain=0.3]
-   * @param {number} [opts.release=0.05]
-   */
-  _playTones(freqs, opts = {}) {
-    if (this._muted) return;
-    const ctx = this._ctx_ensure();
-    const {
-      duration = 0.15,
-      type = 'sine',
-      volume = 0.15,
-      attack = 0.005,
-      decay = 0.02,
-      sustain = 0.3,
-      release = 0.05,
-    } = opts;
-
-    const now = ctx.currentTime;
-
-    for (const freq of freqs) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.value = freq;
-
-      // ADSR envelope
-      const total = attack + decay + duration + release;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(volume, now + attack);
-      gain.gain.linearRampToValueAtTime(volume * sustain, now + attack + decay);
-      gain.gain.setValueAtTime(volume * sustain, now + attack + decay + duration);
-      gain.gain.linearRampToValueAtTime(0, now + total);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + total + 0.01);
-    }
-  }
-
-  /**
-   * Play noise burst (buzz, explosion).
-   * @param {object} opts
-   */
-  _playNoise(opts = {}) {
-    if (this._muted) return;
-    const ctx = this._ctx_ensure();
-    const {
-      duration = 0.3,
-      volume = 0.1,
-      type = 'brown',
-    } = opts;
-
-    const bufferSize = ctx.sampleRate * duration;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let i = 0; i < bufferSize; i++) {
-      let v;
-      if (type === 'white') {
-        v = Math.random() * 2 - 1;
-      } else if (type === 'pink') {
-        // pink noise approximation: accumulate
-        v = (Math.random() * 2 - 1) * (1 - i / bufferSize);
-      } else {
-        // brown: integrate white noise
-        v = (Math.random() * 2 - 1) * 0.1;
-        if (i > 0) v += data[i - 1] * 0.9;
-      }
-      data[i] = v;
+        // Bind so we can pass references
+        this.tilePlace = this.tilePlace.bind(this);
+        this.wordSubmit = this.wordSubmit.bind(this);
+        this.invalidWord = this.invalidWord.bind(this);
+        this.goldEarned = this.goldEarned.bind(this);
+        this.achievementUnlock = this.achievementUnlock.bind(this);
+        this.roundWin = this.roundWin.bind(this);
+        this.roundLoss = this.roundLoss.bind(this);
     }
 
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-
-    // Low-pass filter for buzzy feel
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 300;
-
-    src.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    src.start();
-  }
-
-  // ─── public sound triggers ──────────────────────────
-
-  /** Tile placement — short click/pop */
-  tilePlace() {
-    this._playTones([800], {
-      duration: 0.04,
-      type: 'sine',
-      volume: 0.08,
-      attack: 0.002,
-      decay: 0.005,
-      sustain: 0.1,
-      release: 0.01,
-    });
-  }
-
-  /** Word submitted successfully — ascending chime (C-E-G arpeggio) */
-  wordSubmit() {
-    const now = this._ctx_ensure().currentTime;
-    if (this._muted) return;
-
-    // Schedule arpeggio notes manually for timing
-    const ctx = this._ctx_ensure();
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-    const baseVol = 0.12;
-    const spacing = 0.07;
-
-    for (let i = 0; i < notes.length; i++) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = notes[i];
-
-      const start = now + i * spacing;
-      const dur = 0.15;
-
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(baseVol, start + 0.005);
-      gain.gain.setValueAtTime(baseVol, start + dur - 0.02);
-      gain.gain.linearRampToValueAtTime(0, start + dur);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + dur + 0.01);
-    }
-  }
-
-  /** Invalid word — low buzz */
-  invalidWord() {
-    this._playNoise({ duration: 0.4, volume: 0.08, type: 'brown' });
-    this._playTones([110], {
-      duration: 0.35,
-      type: 'sawtooth',
-      volume: 0.06,
-      attack: 0.01,
-      decay: 0.05,
-      sustain: 0.5,
-      release: 0.15,
-    });
-  }
-
-  /** Gold earned — coin / ding */
-  goldEarned() {
-    const ctx = this._ctx_ensure();
-    if (this._muted) return;
-    const now = ctx.currentTime;
-
-    // Two quick metallic pings
-    const pings = [1800, 2400];
-    for (let i = 0; i < pings.length; i++) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = pings[i];
-
-      const start = now + i * 0.06;
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(0.1, start + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.12);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + 0.15);
-    }
-  }
-
-  /** Achievement unlocked — fanfare (C-E-G-C arpeggio, brighter) */
-  achievementUnlock() {
-    const ctx = this._ctx_ensure();
-    if (this._muted) return;
-    const now = ctx.currentTime;
-
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-    const baseVol = 0.14;
-    const spacing = 0.08;
-
-    for (let i = 0; i < notes.length; i++) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = notes[i];
-
-      const start = now + i * spacing;
-      const dur = 0.3;
-
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(baseVol, start + 0.005);
-      gain.gain.setValueAtTime(baseVol, start + dur - 0.05);
-      gain.gain.linearRampToValueAtTime(0, start + dur);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + dur + 0.01);
+    /** Lazily create AudioContext on first user interaction */
+    _ensureCtx() {
+        if (!this._ctx) {
+            const Ctor = window.AudioContext || window.webkitAudioContext;
+            if (!Ctor) return null;
+            this._ctx = new Ctor();
+        }
+        // Resume if suspended (autoplay policy)
+        if (this._ctx.state === 'suspended') {
+            this._ctx.resume().catch(() => {});
+        }
+        return this._ctx;
     }
 
-    // Sparkly top note
-    setTimeout(() => {
-      if (this._muted) return;
-      const ctx2 = this._ctx_ensure();
-      const now2 = ctx2.currentTime;
-      const osc = ctx2.createOscillator();
-      const gain = ctx2.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 1318.5; // E6
-      gain.gain.setValueAtTime(0, now2);
-      gain.gain.linearRampToValueAtTime(0.08, now2 + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.001, now2 + 0.6);
-      osc.connect(gain);
-      gain.connect(ctx2.destination);
-      osc.start(now2);
-      osc.stop(now2 + 0.7);
-    }, notes.length * spacing * 1000 + 100);
-  }
-
-  /** Round won — celebration chord + rising arpeggio */
-  roundWin() {
-    const ctx = this._ctx_ensure();
-    if (this._muted) return;
-    const now = ctx.currentTime;
-
-    // Grand chord: C major 7th
-    const chord = [523.25, 659.25, 783.99, 987.77]; // C5 E5 G5 B5
-    for (const freq of chord) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.1, now + 0.01);
-      gain.gain.setValueAtTime(0.1, now + 0.4);
-      gain.gain.linearRampToValueAtTime(0, now + 0.8);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 1.0);
+    /** Master gate — skip if muted or no audio hardware */
+    _play(fn) {
+        if (this._muted) return;
+        const ctx = this._ensureCtx();
+        if (!ctx) return;
+        try { fn(ctx); } catch (_) { /* silently ignore audio errors */ }
     }
-  }
 
-  /** Round lost — sad trombone descending slide */
-  roundLoss() {
-    const ctx = this._ctx_ensure();
-    if (this._muted) return;
-    const now = ctx.currentTime;
+    // ── Public API ────────────────────────────────────────────────
 
-    // Descending slide on sawtooth
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(350, now);
-    osc.frequency.linearRampToValueAtTime(100, now + 0.6);
+    /** Toggle mute state. Returns new muted state. */
+    toggle() {
+        this._muted = !this._muted;
+        try { localStorage.setItem('scruggle_muted', this._muted); } catch (_) {}
+        return this._muted;
+    }
 
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.08, now + 0.01);
-    gain.gain.setValueAtTime(0.08, now + 0.5);
-    gain.gain.linearRampToValueAtTime(0, now + 0.9);
+    setMuted(val) {
+        this._muted = !!val;
+        try { localStorage.setItem('scruggle_muted', this._muted); } catch (_) {}
+    }
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 1.0);
-  }
+    isMuted() {
+        return this._muted;
+    }
+
+    // ── Sound Effects ─────────────────────────────────────────────
+
+    /** Short click/pop for placing a tile on the board */
+    tilePlace() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, t);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.04);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.08);
+        });
+    }
+
+    /** Ascending chime for successful word submission */
+    wordSubmit() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                const start = t + i * 0.1;
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.18, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(start);
+                osc.stop(start + 0.25);
+            });
+        });
+    }
+
+    /** Low buzz / error tone for invalid word */
+    invalidWord() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(110, t);
+            osc.frequency.linearRampToValueAtTime(90, t + 0.3);
+            gain.gain.setValueAtTime(0.12, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.35);
+        });
+    }
+
+    /** Coin sound — two quick metallic pings */
+    goldEarned() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            [2637, 3136].forEach((freq, i) => { // E7, G7
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                const start = t + i * 0.06;
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.12, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(start);
+                osc.stop(start + 0.18);
+            });
+        });
+    }
+
+    /** Fanfare for achievement unlock */
+    achievementUnlock() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            // Majestic ascending brass-like fanfare
+            const notes = [
+                { freq: 392, startOff: 0.0, dur: 0.15 },   // G4
+                { freq: 0, startOff: 0.15, dur: 0.05 },    // gap
+                { freq: 392, startOff: 0.2, dur: 0.1 },    // G4
+                { freq: 0, startOff: 0.3, dur: 0.05 },     // gap
+                { freq: 523.25, startOff: 0.35, dur: 0.12 }, // C5
+                { freq: 659.25, startOff: 0.47, dur: 0.12 }, // E5
+                { freq: 783.99, startOff: 0.59, dur: 0.35 }, // G5 — held
+                { freq: 1046.5, startOff: 0.7, dur: 0.25 },  // C6
+            ];
+            notes.forEach(({ freq, startOff, dur }) => {
+                if (freq === 0) return;
+                const start = t + startOff;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.10, start);
+                gain.gain.linearRampToValueAtTime(0.06, start + dur * 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(start);
+                osc.stop(start + dur);
+            });
+            // Sub-bass rumble
+            const bass = ctx.createOscillator();
+            const bassGain = ctx.createGain();
+            bass.type = 'sine';
+            bass.frequency.setValueAtTime(65.41, t + 0.35); // C2
+            bassGain.gain.setValueAtTime(0.06, t + 0.35);
+            bassGain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+            bass.connect(bassGain).connect(ctx.destination);
+            bass.start(t + 0.35);
+            bass.stop(t + 0.9);
+        });
+    }
+
+    /** Celebration sound for winning a round */
+    roundWin() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            // Triumphant rising arpeggio
+            const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                const start = t + i * 0.12;
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.20, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(start);
+                osc.stop(start + 0.35);
+            });
+            // Sparkle overlay at the end
+            const sparkle = ctx.createOscillator();
+            const sparkleGain = ctx.createGain();
+            sparkle.type = 'sine';
+            sparkle.frequency.setValueAtTime(1568, t + 0.48); // G6
+            sparkleGain.gain.setValueAtTime(0.08, t + 0.48);
+            sparkleGain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+            sparkle.connect(sparkleGain).connect(ctx.destination);
+            sparkle.start(t + 0.48);
+            sparkle.stop(t + 0.7);
+        });
+    }
+
+    /** Sad trombone for round loss */
+    roundLoss() {
+        this._play(ctx => {
+            const t = ctx.currentTime;
+            // Descending "wah wah" — sawtooth with pitch bend
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            // Start high, bend down
+            osc.frequency.setValueAtTime(392, t);       // G4
+            osc.frequency.linearRampToValueAtTime(349.23, t + 0.2); // F4
+            osc.frequency.linearRampToValueAtTime(311.13, t + 0.35); // Eb4
+            osc.frequency.linearRampToValueAtTime(261.63, t + 0.5);  // C4
+            osc.frequency.linearRampToValueAtTime(196, t + 0.65);    // G3
+            osc.frequency.linearRampToValueAtTime(146.83, t + 0.9);  // D3
+            gain.gain.setValueAtTime(0.12, t);
+            gain.gain.linearRampToValueAtTime(0.10, t + 0.3);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 1.0);
+
+            // Second oscillator for fuller sound
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(392, t);
+            osc2.frequency.linearRampToValueAtTime(349.23, t + 0.2);
+            osc2.frequency.linearRampToValueAtTime(311.13, t + 0.35);
+            osc2.frequency.linearRampToValueAtTime(261.63, t + 0.5);
+            osc2.frequency.linearRampToValueAtTime(196, t + 0.65);
+            osc2.frequency.linearRampToValueAtTime(146.83, t + 0.9);
+            gain2.gain.setValueAtTime(0.06, t);
+            gain2.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+            osc2.connect(gain2).connect(ctx.destination);
+            osc2.start(t);
+            osc2.stop(t + 1.0);
+        });
+    }
 }
 
-/** Singleton export */
-export const audio = new AudioManager();
+const audio = new AudioManager();
 export default audio;

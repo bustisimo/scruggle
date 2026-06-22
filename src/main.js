@@ -151,6 +151,7 @@ function showStartScreen() {
 function setupDictionarySearch() {
     const input = document.getElementById('dict-search');
     const results = document.getElementById('dict-results');
+    const matchCount = document.getElementById('dict-match-count');
     if (!input || !results) return;
 
     let debounceTimer;
@@ -160,10 +161,11 @@ function setupDictionarySearch() {
             const query = input.value.trim().toUpperCase();
             if (query.length < 3) {
                 results.innerHTML = '<p style="opacity: 0.7; font-style: italic; font-size: 14px;">Search over 270,000 valid words (min 3 chars).</p>';
+                if (matchCount) matchCount.innerText = '';
                 return;
             }
 
-            results.innerHTML = '<p style="opacity: 0.7;">Searching...</p>';
+            results.innerHTML = '<p style="opacity: 0.7; font-size: 14px;">Searching...</p>';
 
             // Search the Set
             const matches = [];
@@ -175,12 +177,16 @@ function setupDictionarySearch() {
             }
 
             if (matches.length === 0) {
-                results.innerHTML = '<p style="opacity: 0.7;">No matches found.</p>';
+                results.innerHTML = '<p style="opacity: 0.7; font-style: italic;">No matches found.</p>';
+                if (matchCount) matchCount.innerText = '0 results';
             } else {
-                const countText = matches.length >= 200
-                    ? `<div style="font-size: 12px; color: #aaa; padding: 4px 12px 8px; border-bottom: 1px solid rgba(253, 250, 242, 0.08);">Showing first 200 of 200+ matches</div>`
-                    : `<div style="font-size: 12px; color: #aaa; padding: 4px 12px 8px; border-bottom: 1px solid rgba(253, 250, 242, 0.08);">${matches.length} match${matches.length === 1 ? '' : 'es'}</div>`;
-                results.innerHTML = countText + matches.map(w => `<div>${w}</div>`).join('');
+                // Scroll results back to top when new results come in
+                results.scrollTop = 0;
+
+                const matchLabel = matches.length >= 200 ? '200+' : matches.length;
+                if (matchCount) matchCount.innerText = `${matchLabel} results`;
+
+                results.innerHTML = matches.map(w => `<div>${w}</div>`).join('');
             }
         }, 150);
     };

@@ -435,7 +435,21 @@ function renderUI() {
     // Progress bar animation
     const fill = document.getElementById('progress-bar-fill');
     const pct = Math.min(100, (gameState.score / gameState.targetScore) * 100);
+    const prevPct = parseFloat(fill.dataset.prevPct || '0');
     fill.style.width = pct + '%';
+    // Score float-up text when progress increases
+    if (pct > prevPct && prevPct > 0) {
+        const diffPct = pct - prevPct;
+        const floatEl = document.createElement('div');
+        floatEl.className = 'score-float';
+        floatEl.innerText = '+' + Math.round(diffPct * gameState.targetScore / 100) + ' pts';
+        const container = document.getElementById('progress-bar-container');
+        if (container) {
+            container.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 1300);
+        }
+    }
+    fill.dataset.prevPct = pct;
     // Pulse when near target (75%+)
     fill.classList.toggle('high-pulse', pct >= 75 && pct < 100);
     fill.classList.toggle('complete', pct >= 100);
@@ -709,7 +723,17 @@ function setupEventListeners() {
             boardEl.classList.remove('board-shake');
             void boardEl.offsetWidth;
             boardEl.classList.add('board-shake');
-            setTimeout(() => boardEl.classList.remove('board-shake'), 550);
+            // Pulse individual invalid tiles
+            const invalidTiles = boardEl.querySelectorAll('.tile.invalid');
+            invalidTiles.forEach(el => {
+                el.classList.remove('invalid-shake');
+                void el.offsetWidth;
+                el.classList.add('invalid-shake');
+            });
+            setTimeout(() => {
+                boardEl.classList.remove('board-shake');
+                invalidTiles.forEach(el => el.classList.remove('invalid-shake'));
+            }, 550);
             return;
         }
 

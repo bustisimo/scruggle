@@ -80,6 +80,8 @@ export function renderBoard(onCellClick, renderCallback) {
                     if (!tile._animPlaced) {
                         tileEl.classList.add('just-placed');
                         tile._animPlaced = true;
+                        // Spawn burst particles around the tile
+                        spawnPlaceParticles(tileEl);
                         // Remove animation class after it finishes so it doesn't interfere with hover
                         setTimeout(() => {
                             const els = document.querySelectorAll('#board .tile.just-placed');
@@ -475,6 +477,43 @@ export function renderBagDrawer() {
     }
 
     container.appendChild(tileGrid);
+}
+
+/**
+ * Spawn burst particles around a newly placed tile.
+ * Creates small colored dots that fly outward and fade.
+ */
+function spawnPlaceParticles(tileEl) {
+    const boardEl = document.getElementById('board');
+    if (!boardEl) return;
+    const boardRect = boardEl.getBoundingClientRect();
+    const tileRect = tileEl.getBoundingClientRect();
+    const cx = tileRect.left - boardRect.left + tileRect.width / 2;
+    const cy = tileRect.top - boardRect.top + tileRect.height / 2;
+    const colors = ['#4caf50', '#81c784', '#aed581', '#fdd835', '#ffab40'];
+    for (let i = 0; i < 6; i++) {
+        const p = document.createElement('div');
+        p.className = 'tile-place-particle';
+        const angle = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.5;
+        const dist = 20 + Math.random() * 25;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        const color = colors[i % colors.length];
+        p.style.cssText = `
+            left: ${cx}px;
+            top: ${cy}px;
+            background: ${color};
+            --tx: ${dx}px;
+            --ty: ${dy}px;
+        `;
+        p.style.setProperty('--tx', dx + 'px');
+        p.style.setProperty('--ty', dy + 'px');
+        boardEl.appendChild(p);
+    }
+    // Remove particles after animation
+    setTimeout(() => {
+        boardEl.querySelectorAll('.tile-place-particle').forEach(el => el.remove());
+    }, 700);
 }
 
 /**

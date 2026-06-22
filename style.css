@@ -2099,22 +2099,52 @@ body::before {
     85% { transform: scale(0.98) translateY(1px) rotate(0deg); }
     100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
 }
+@keyframes tile-place-ring {
+    0% { transform: scale(0.5); opacity: 0.6; }
+    50% { opacity: 0.3; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
 .tile.just-placed {
     animation: tile-place-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     z-index: 10;
+}
+/* Expanding ring beneath placed tile */
+.tile.just-placed::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 8px;
+    border: 2px solid rgba(76, 175, 80, 0.5);
+    animation: tile-place-ring 0.5s ease-out forwards;
+    pointer-events: none;
+}
+/* Particle spark — small burst dots spawned by JS */
+.tile-place-particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 20;
+    animation: tile-particle-fly 0.6s ease-out forwards;
+}
+@keyframes tile-particle-fly {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.2); }
 }
 
 /* 2. Center star pulse/glow — compound breathing glow with sparkle ring */
 @keyframes center-star-glow {
     0% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.2), inset 0 0 8px rgba(255, 215, 0, 0.05); }
     25% { box-shadow: 0 0 14px rgba(255, 215, 0, 0.45), inset 0 0 12px rgba(255, 215, 0, 0.1); }
-    50% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.6), inset 0 0 18px rgba(255, 215, 0, 0.15); }
+    50% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.6), inset 0 0 18px rgba(255, 215, 0, 0.15), 0 0 30px rgba(255, 215, 0, 0.15); }
     75% { box-shadow: 0 0 14px rgba(255, 215, 0, 0.45), inset 0 0 12px rgba(255, 215, 0, 0.1); }
     100% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.2), inset 0 0 8px rgba(255, 215, 0, 0.05); }
 }
 .cell.center {
     animation: center-star-glow 3s ease-in-out infinite;
     position: relative;
+    overflow: visible;
 }
 /* Center star sparkle ring — orbiting dot */
 .cell.center::after {
@@ -2124,24 +2154,33 @@ body::before {
     height: 6px;
     border-radius: 50%;
     background: rgba(255, 215, 0, 0.8);
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.6),
+        -24px -18px 0 0 rgba(255, 215, 0, 0.3),
+        24px -18px 0 0 rgba(255, 215, 0, 0.3),
+        -24px 18px 0 0 rgba(255, 215, 0, 0.3),
+        24px 18px 0 0 rgba(255, 215, 0, 0.3),
+        0 -26px 0 0 rgba(255, 215, 0, 0.25),
+        0 26px 0 0 rgba(255, 215, 0, 0.25),
+        -20px 0 0 0 rgba(255, 215, 0, 0.25),
+        20px 0 0 0 rgba(255, 215, 0, 0.25);
     top: 50%;
     left: 50%;
     margin-top: -3px;
     margin-left: -3px;
-    animation: center-sparkle-orb 4s ease-in-out infinite;
+    animation: center-sparkle-orb 6s ease-in-out infinite;
     pointer-events: none;
     z-index: 5;
 }
 @keyframes center-sparkle-orb {
     0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
-    12% { transform: translate(-20px, -18px) scale(0.6); opacity: 0.3; }
-    25% { transform: translate(0, -26px) scale(1.2); opacity: 0.9; }
-    37% { transform: translate(20px, -18px) scale(0.5); opacity: 0.2; }
-    50% { transform: translate(26px, 0) scale(1); opacity: 0.8; }
-    62% { transform: translate(20px, 18px) scale(0.6); opacity: 0.3; }
-    75% { transform: translate(0, 26px) scale(1.1); opacity: 0.9; }
-    87% { transform: translate(-20px, 18px) scale(0.5); opacity: 0.2; }
+    12% { transform: translate(-12px, -10px) scale(0.6); opacity: 0.3; }
+    25% { transform: translate(0, -15px) scale(1.2); opacity: 0.9; }
+    37% { transform: translate(12px, -10px) scale(0.5); opacity: 0.2; }
+    50% { transform: translate(15px, 0) scale(1); opacity: 0.8; }
+    62% { transform: translate(12px, 10px) scale(0.6); opacity: 0.3; }
+    75% { transform: translate(0, 15px) scale(1.1); opacity: 0.9; }
+    87% { transform: translate(-12px, 10px) scale(0.5); opacity: 0.2; }
     100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
 }
 /* Floating sparkle particles spawned by JS */
@@ -2151,16 +2190,34 @@ body::before {
     100% { transform: translate(0, -40px) scale(0.3); opacity: 0; }
 }
 
-/* 3. Hand tile slide-in — whoosh from right with overshoot */
+/* 3. Hand tile slide-in — whoosh from right with overshoot + speed trail */
 @keyframes hand-tile-slide {
     0% { transform: translateX(100px) scale(0.4) rotate(-8deg); opacity: 0; }
-    50% { transform: translateX(-10px) scale(1.08) rotate(2deg); opacity: 1; }
-    70% { transform: translateX(4px) scale(0.97) rotate(-1deg); }
-    85% { transform: translateX(-2px) scale(1.02) rotate(0.5deg); }
+    40% { transform: translateX(-8px) scale(1.08) rotate(2deg); opacity: 1; }
+    60% { transform: translateX(4px) scale(0.97) rotate(-1deg); }
+    80% { transform: translateX(-2px) scale(1.02) rotate(0.5deg); }
     100% { transform: translateX(0) scale(1) rotate(0deg); opacity: 1; }
 }
 .tile.hand-enter {
     animation: hand-tile-slide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+/* Speed-trail shadow behind sliding hand tile */
+.tile.hand-enter::after {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: -20px;
+    width: 30px;
+    height: 70%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.08) 60%, transparent);
+    border-radius: 4px;
+    pointer-events: none;
+    animation: hand-trail-shrink 0.5s ease-out forwards;
+}
+@keyframes hand-trail-shrink {
+    0% { opacity: 0.8; transform: scaleX(1); }
+    60% { opacity: 0.3; transform: scaleX(0.4); }
+    100% { opacity: 0; transform: scaleX(0); }
 }
 
 /* 4. Board shake on invalid attempt — aggressive with red flash tint */
@@ -2193,9 +2250,20 @@ body::before {
     animation: board-flash-fade 0.6s ease-out forwards;
 }
 @keyframes board-flash-fade {
-    0% { background: rgba(198, 40, 40, 0.2); }
+    0% { background: rgba(198, 40, 40, 0.25); }
     50% { background: rgba(198, 40, 40, 0.08); }
     100% { background: rgba(198, 40, 40, 0); }
+}
+/* Individual invalid tile pulse during shake */
+.tile.invalid-shake {
+    animation: tile-invalid-pulse 0.6s ease-in-out;
+}
+@keyframes tile-invalid-pulse {
+    0%, 100% { box-shadow: 0 4px 0 #b71c1c; }
+    20% { box-shadow: 0 4px 0 #b71c1c, 0 0 16px rgba(198, 40, 40, 0.7); filter: brightness(1.3); }
+    40% { box-shadow: 0 4px 0 #b71c1c, 0 0 8px rgba(198, 40, 40, 0.4); }
+    60% { box-shadow: 0 4px 0 #b71c1c, 0 0 20px rgba(198, 40, 40, 0.8); filter: brightness(1.2); }
+    80% { box-shadow: 0 4px 0 #b71c1c, 0 0 10px rgba(198, 40, 40, 0.3); }
 }
 
 /* 5. Progress bar under scoreboard — animated sweep with numeric feel */
@@ -2250,6 +2318,29 @@ body::before {
 @keyframes progress-complete-glow {
     0%, 100% { filter: brightness(1); box-shadow: 0 0 6px rgba(255, 215, 0, 0.3); }
     50% { filter: brightness(1.8); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
+}
+/* Score float-up text near progress bar */
+.score-float {
+    position: absolute;
+    right: 0;
+    top: -24px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #4caf50;
+    font-family: 'Georgia', serif;
+    pointer-events: none;
+    z-index: 50;
+    animation: score-float-up 1.2s ease-out forwards;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.score-float.gold-float {
+    color: #ffd700;
+}
+@keyframes score-float-up {
+    0% { opacity: 1; transform: translateY(0) scale(0.8); }
+    30% { transform: translateY(-6px) scale(1.1); }
+    60% { opacity: 1; transform: translateY(-18px) scale(1); }
+    100% { opacity: 0; transform: translateY(-32px) scale(0.9); }
 }
 
 /* ===== Word highlight animation on scored tiles ===== */

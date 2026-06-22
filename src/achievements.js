@@ -92,6 +92,53 @@ export const achievements = [
         check(state, stats, context) { return context.turnScore >= 500; }},
     { id: 'clutch', name: 'Clutch', desc: 'Win on the very last hand', icon: '🎯',
         check(state, stats, context) { return context.roundWon && state.handsLeft === 0; }},
+    // ── New milestones ────────────────────────────────────────────────────
+    { id: 'gem_collector', name: 'Gem Collector', desc: 'Earn 2,500 total gold', icon: '🔷',
+        check(state, stats, context) { return stats.totalGold >= 2500; }},
+    { id: 'word_artist', name: 'Word Artist', desc: 'Submit 1,000 total words', icon: '📖',
+        check(state, stats, context) { return stats.totalWords >= 1000; }},
+    { id: 'half_century', name: 'Half-Century', desc: 'Win 25 rounds total', icon: '🏅',
+        check(state, stats, context) { return stats.totalWins >= 25; }},
+    // ── Board fill ────────────────────────────────────────────────────────
+    { id: 'board_filler', name: 'Board Filler', desc: 'Fill 40+ cells on the board in one round', icon: '🟦',
+        check(state, stats, context) {
+            const locked = state.board.flat().filter(c => c && c.isLocked).length;
+            return locked >= 40;
+        }},
+    { id: 'board_dominator', name: 'Board Dominator', desc: 'Fill every cell on the board in one round', icon: '💪',
+        check(state, stats, context) {
+            const locked = state.board.flat().filter(c => c && c.isLocked).length;
+            return locked >= 49;
+        }},
+    // ── Gold / economy ────────────────────────────────────────────────────
+    { id: 'golden_ending', name: 'Golden Ending', desc: 'Win a round with 100+ gold remaining', icon: '👑',
+        check(state, stats, context) { return context.roundWon && state.gold >= 100; }},
+    // ── Ink ───────────────────────────────────────────────────────────────
+    { id: 'ink_apprentice', name: 'Ink Apprentice', desc: 'Have 3+ different ink types in play at once', icon: '🎨',
+        check(state, stats, context) {
+            const inked = new Set();
+            [...state.hand, ...state.bag, ...state.board.flat().filter(Boolean)].forEach(t => { if (t.ink) inked.add(t.ink); });
+            return inked.size >= 3;
+        }},
+    { id: 'ink_expert', name: 'Ink Expert', desc: 'Have 5+ inked tiles in play at once', icon: '🎭',
+        check(state, stats, context) {
+            const inked = [...state.hand, ...state.bag, ...state.board.flat().filter(Boolean)].filter(t => t && t.ink);
+            return inked.length >= 5;
+        }},
+    // ── Bookmarks ─────────────────────────────────────────────────────────
+    { id: 'bookmark_king', name: 'Bookmark King', desc: 'Own 10+ bookmark types at once', icon: '📚',
+        check(state, stats, context) {
+            const bookmarks = state.inventory.filter(id => !id.startsWith('sticker_') && !id.startsWith('pack_') && id !== 'buy_letter');
+            return bookmarks.length >= 10;
+        }},
+    // ── Progression ───────────────────────────────────────────────────────
+    { id: 'trifecta', name: 'Trifecta', desc: 'Win 3 rounds in a single run', icon: '🎪',
+        check(state, stats, context) { return state.currentRound >= 4; }},
+    // ── Combo / streak ────────────────────────────────────────────────────
+    { id: 'combo_king', name: 'Combo King', desc: 'Reach a streak of 5', icon: '🔥',
+        check(state, stats, context) { return state.combo >= 5; }},
+    { id: 'combo_god', name: 'Combo God', desc: 'Reach a streak of 10', icon: '⚡',
+        check(state, stats, context) { return state.combo >= 10; }},
 ];
 
 let unlockedAchievements = [];
@@ -224,6 +271,18 @@ export function getAchievementProgress(achId) {
         case 'veteran': return `${stats.maxRound || 1}/100 rounds`;
         case 'supernova': return 'Score 500+ in a single turn';
         case 'clutch': return 'Win on the very last hand';
+        case 'gem_collector': return `${stats.totalGold || 0}/2500 gold`;
+        case 'word_artist': return `${stats.totalWords || 0}/1000 words`;
+        case 'half_century': return `${stats.totalWins || 0}/25 wins`;
+        case 'board_filler': return 'Fill 40 cells on the board';
+        case 'board_dominator': return 'Fill all 49 cells';
+        case 'golden_ending': return 'Win with 100+ gold';
+        case 'ink_apprentice': return '3+ ink types at once';
+        case 'ink_expert': return '5+ inked tiles at once';
+        case 'bookmark_king': return 'Own 10+ bookmarks';
+        case 'trifecta': return 'Win 3 rounds in one run';
+        case 'combo_king': return 'Reach combo of 5';
+        case 'combo_god': return 'Reach combo of 10';
         default: return '';
     }
 }

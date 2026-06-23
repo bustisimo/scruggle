@@ -17,8 +17,14 @@ import audio from './audio.js';
 
 function fitBoard() {
     const root = document.documentElement;
-    const pad = 40; // side padding
-    const vertOverhead = 260; // scoreboard + stats + hand + controls + safari bar + gaps
+    const bodyPad = window.innerWidth <= 600 ? 4 : 20;
+    const isMobile = window.innerWidth <= 600;
+    // Board structural overhead: border*2 + padding*2 + gap*6 ≈ cell * 0.52
+    // Use a fixed buffer so the board + surrounding elements fit the viewport width
+    const boardFudge = isMobile ? 24 : 40;
+    const pad = bodyPad + boardFudge;
+    // vertOverhead: scoreboard + stats + hand-container + controls + gaps + body padding + safari bar
+    const vertOverhead = isMobile ? 325 : 260;
 
     const vw = window.innerWidth;
     const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;

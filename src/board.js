@@ -127,9 +127,13 @@ export function renderBoard(onCellClick, renderCallback) {
                 }
                 cell.appendChild(tileEl);
             } else {
-                // Hover highlight for valid placement area
-                // Also highlight the hovered cell itself to show it's clickable
-                cell.addEventListener('mouseenter', () => {
+                // Hover highlight for valid placement area — desktop only (touch devices
+                // trigger mouseenter on tap and it sticks with no mouseleave, leaving
+                // confusing permanent highlights)
+                if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) {
+                    // Touch device: no hover highlights, skip
+                } else {
+                    cell.addEventListener('mouseenter', () => {
                     cell.classList.add('cell-hover-target');
                     // Determine valid adjacent cells for this empty cell
                     const adjCells = getValidAdjacentCells(x, y);
@@ -147,6 +151,7 @@ export function renderBoard(onCellClick, renderCallback) {
                         el.classList.remove('valid-placement');
                     });
                 });
+                }
 
                 // Board Drag and Drop targets for empty cells
                 cell.addEventListener('dragover', (e) => {

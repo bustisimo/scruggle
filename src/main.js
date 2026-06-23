@@ -12,7 +12,7 @@ import {
 import { openShop, buyItem } from './shop.js';
 import { loadAchievements, checkAchievements, getUnlockedCount } from './achievements.js';
 import { BOSSES, getBossForRound, applyBossReward } from './bosses.js';
-import { showScoringAnimation, closeScoringAnimation } from './scoring_animation.js';
+import { showScoringAnimation, showBoardMessage } from './scoring_animation.js';
 import audio from './audio.js';
 import { showTutorial, hasSeenTutorial } from './tutorial.js';
 
@@ -1094,6 +1094,7 @@ function setupEventListeners() {
             wordsData.push({
                 word: w.word,
                 tiles,
+                coords: w.coords,
                 letterSum: sumLetters,
                 wordMultiplier,
                 multiplierText,
@@ -1312,10 +1313,10 @@ function setupEventListeners() {
             bossMessage = mirrorResult.message;
         }
 
-        // Show the scoring animation
+        // Show the scoring animation on the board (non-blocking visual feedback)
         if (wordsData.length > 0) {
             await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null, baseComboLevel);
-            // Flash scored tiles after animation closes
+            // Brief fade highlight on scored tiles
             const scoredTiles = document.querySelectorAll('#board .tile.locked');
             if (scoredTiles.length > 0) {
                 scoredTiles.forEach(el => el.classList.add('word-highlight'));
@@ -1323,11 +1324,11 @@ function setupEventListeners() {
                     document.querySelectorAll('#board .tile.word-highlight').forEach(el => {
                         el.classList.remove('word-highlight');
                     });
-                }, 1800);
+                }, 600);
             }
         } else {
             // No new words scored — skip animation
-            if (bossMessage) alert(bossMessage);
+            if (bossMessage) showBoardMessage(bossMessage);
         }
         checkWinLoss();
     };
@@ -1415,11 +1416,6 @@ function setupEventListeners() {
         showStartScreen();
     };
 
-    // Scoring animation continue button
-    document.getElementById('scoring-continue-btn').onclick = () => {
-        closeScoringAnimation();
-    };
-
     // Inventory drawer
     const invDrawer = document.getElementById('inventory-drawer');
     document.getElementById('view-inv-btn').onclick = () => {
@@ -1491,7 +1487,7 @@ function setupEventListeners() {
     // ===== Global Keyboard Shortcuts =====
     function closeAllModalsAndDrawers() {
         // Close modals
-        const modals = ['win-modal', 'loss-modal', 'kbd-shortcuts-modal', 'scoring-animation',
+        const modals = ['win-modal', 'loss-modal', 'kbd-shortcuts-modal',
             'boss-intro-screen', 'boss-defeat-screen', 'round-transition', 'shop-screen'];
         modals.forEach(id => {
             const el = document.getElementById(id);
@@ -1523,13 +1519,6 @@ function setupEventListeners() {
         if (key === 'Escape') {
             if (kbdModal && kbdModal.style.display === 'flex') {
                 closeKbdModal();
-                e.preventDefault();
-                return;
-            }
-            // If scoring animation is showing, close it properly
-            const scoring = document.getElementById('scoring-animation');
-            if (scoring && scoring.style.display !== 'none') {
-                closeScoringAnimation();
                 e.preventDefault();
                 return;
             }

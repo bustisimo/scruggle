@@ -3808,3 +3808,86 @@ body:not(.theme-light) #theme-toggle-btn {
         margin-bottom: 10px;
     }
 }
+
+/* ===== In-Board Scoring Popups ===== */
+
+/* Tile flash wave — sequential highlight on scored tiles */
+.tile.scoring-flash {
+    animation: score-tile-flash 0.8s ease-out;
+}
+
+@keyframes score-tile-flash {
+    0% { box-shadow: 0 0 0 rgba(76, 175, 80, 0); transform: scale(1); }
+    30% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.6), 0 0 40px rgba(76, 175, 80, 0.2); transform: scale(1.08); }
+    60% { box-shadow: 0 0 12px rgba(76, 175, 80, 0.3); transform: scale(1.04); }
+    100% { box-shadow: 0 0 0 rgba(76, 175, 80, 0); transform: scale(1); }
+}
+
+/* Floating score popup above a word */
+.scoring-board-popup {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.scoring-popup-pts {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--valid-color, #00ff88);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,136,0.3);
+    font-family: 'Georgia', serif;
+}
+
+.scoring-popup-gold {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3);
+    font-family: 'Georgia', serif;
+}
+
+.scoring-popup-note {
+    font-size: 12px;
+    color: #bcaaa4;
+    font-style: italic;
+    margin-top: 2px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    font-family: 'Georgia', serif;
+}
+
+/* Floating combo popup */
+.scoring-combo-popup {
+    position: absolute;
+    z-index: 100;
+    font-size: 24px;
+    font-weight: 900;
+    color: #ff6d00;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 20px rgba(255,109,0,0.3);
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Georgia', serif;
+}
+
+/* Boss/event message above board */
+.scoring-board-message {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 200;
+    padding: 12px 24px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--parchment);
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Georgia', serif;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}

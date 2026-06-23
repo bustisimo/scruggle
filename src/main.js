@@ -242,8 +242,8 @@ function setupDictionarySearch() {
 
 function initRound(isNewRun) {
     gameState.score = 0;
-    gameState.combo = 0;
     if (isNewRun) {
+        gameState.combo = 0;
         gameState.gold = 0;
         gameState.inventory = [];
         gameState.currentRound = 1;

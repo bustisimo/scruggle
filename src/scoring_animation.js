@@ -3,6 +3,7 @@
  * In-place floating score popups on the board — no blocking overlay.
  * Each tile shows its individual score above it sequentially, then
  * the total score + gold popup floats above the word.
+ * Score display at the top increments in sync with the animations.
  * Combo bonus appears as an orange counter at the end of the last word.
  */
 
@@ -13,32 +14,64 @@ let currentAnimationResolve = null;
  * Fire-and-forget visual feedback — returns a promise that resolves
  * after all animations complete.
  *
- * @param {Array} wordsData - Array of {word, tiles, coords, wordScore, wordGold, bonusTexts, shortWordBonus}
+ * @param {Array} wordsData - Array of {word, tiles, coords, wordScore, wordGold, bonusTexts, shortWordBonus, letterSum}
  * @param {number} turnScore - Total score for the turn
  * @param {number} turnGold - Total gold for the turn
  * @param {string|null} bossMessage - Optional boss mechanic message
  * @param {number} [comboLevel] - Current combo streak level (0 if none)
+ * @param {number} [preScore] - Score BEFORE this turn's submission. If provided,
+ *   the score display increments piece-by-piece in sync with the popups.
  */
-export function showScoringAnimation(wordsData, turnScore, turnGold, bossMessage, comboLevel) {
+export function showScoringAnimation(wordsData, turnScore, turnGold, bossMessage, comboLevel, preScore) {
     const board = document.getElementById('board');
     if (!board) return Promise.resolve();
+
+    // Set up incremental score display
+    const scoreEl = document.getElementById('score');
+    let displayedScore = preScore != null ? preScore : null;
+
+    function addToScore(amount) {
+        if (displayedScore == null || !scoreEl) return;
+        displayedScore += amount;
+        scoreEl.innerText = displayedScore;
+        // Score pop animation
+        scoreEl.classList.remove('score-pop');
+        void scoreEl.offsetWidth;
+        scoreEl.classList.add('score-pop');
+    }
 
     let delay = 300;
     let lastWordEnd = delay;
 
+    // Track word-level score for remaining combo/bookmark delta
+    let wordScoreTotal = 0;
+
     wordsData.forEach((wd) => {
         if (wd.tiles.length === 0) return;
-        const duration = animateWordPopup(board, wd, delay);
+        const duration = animateWordPopup(board, wd, delay, addToScore);
         lastWordEnd = delay + duration;
         delay += 1500;
+        wordScoreTotal += wd.wordScore + (wd.shortWordBonus || 0);
     });
 
     // Show combo floating badge after the last word's animation
     if (comboLevel > 0) {
         const lastRealWord = wordsData.filter(w => w.tiles.length > 0).pop();
         if (lastRealWord && lastRealWord.coords && lastRealWord.coords.length > 0) {
-            animateComboPopup(board, lastRealWord.coords, comboLevel, lastWordEnd - 600);
+            animateComboPopup(board, lastRealWord.coords, comboLevel, lastWordEnd - 600, addToScore);
         }
+    }
+
+    // Add remaining score not covered by per-word contributions (combo bonus, bookmarks)
+    const remainingScore = turnScore - wordScoreTotal;
+    if (remainingScore > 0 && displayedScore != null) {
+        setTimeout(() => {
+            addToScore(remainingScore);
+            // Remove score-pop class after a delay so it doesn't stick
+            setTimeout(() => {
+                if (scoreEl) scoreEl.classList.remove('score-pop');
+            }, 500);
+        }, lastWordEnd + 600);
     }
 
     return new Promise((resolve) => {
@@ -50,11 +83,13 @@ export function showScoringAnimation(wordsData, turnScore, turnGold, bossMessage
 /**
  * Animate a single word: each tile highlights sequentially with its score popup,
  * then a total score + gold popup at the end.
+ * Score display updates in sync with each visual popup.
  */
-function animateWordPopup(board, wd, startDelay) {
+function animateWordPopup(board, wd, startDelay, addToScore) {
     if (!wd.coords || wd.coords.length === 0 || !wd.tiles) return 0;
 
     const tileDelay = 250;
+    let tileSum = 0;
 
     wd.coords.forEach((c, i) => {
         const idx = c.y * 7 + c.x;
@@ -62,6 +97,9 @@ function animateWordPopup(board, wd, startDelay) {
         if (!cell) return;
 
         const tileData = wd.tiles[i];
+        if (tileData) {
+            tileSum += tileData.playedValue;
+        }
         const offset = startDelay + i * tileDelay;
 
         setTimeout(() => {
@@ -78,14 +116,20 @@ function animateWordPopup(board, wd, startDelay) {
             // Show individual tile value popup above this cell
             if (tileData) {
                 showTileScorePopup(board, c, tileData.playedValue, tileData.multiplierBadge);
+                addToScore(tileData.playedValue);
             }
         }, offset);
     });
 
-    // Total score + gold popup after all tiles
+    // Total score + gold popup after all tiles (+ word multiplier delta)
     const totalOffset = startDelay + wd.coords.length * tileDelay + 350;
     setTimeout(() => {
         showTotalPopup(board, wd);
+        // Add the remaining word score beyond individual tile values (word multiplier bonus, short word bonus)
+        const remaining = (wd.wordScore - tileSum) + (wd.shortWordBonus || 0);
+        if (remaining > 0) {
+            addToScore(remaining);
+        }
     }, totalOffset);
 
     return wd.coords.length * tileDelay + 2800;
@@ -218,7 +262,7 @@ function showTotalPopup(board, wd) {
     });
 }
 
-function animateComboPopup(board, lastCoords, comboLevel, startDelay) {
+function animateComboPopup(board, lastCoords, comboLevel, startDelay, addToScore) {
     const boardRect = board.getBoundingClientRect();
 
     const lastC = lastCoords[lastCoords.length - 1];
@@ -246,6 +290,9 @@ function animateComboPopup(board, lastCoords, comboLevel, startDelay) {
         popup.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease';
         popup.style.transform = 'translate(0, 0) scale(1)';
         popup.style.opacity = '1';
+
+        // Increment score display for the combo bonus
+        if (addToScore) addToScore(comboLevel);
 
         setTimeout(() => {
             popup.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';

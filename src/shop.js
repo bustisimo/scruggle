@@ -91,24 +91,7 @@ export function openShop(onBuyCallback) {
 
     shopScreen.style.display = 'flex';
 
-    // View Board toggle: peek at the board behind the shop overlay
-    const viewBoardBtn = document.getElementById('view-board-toggle');
-    const shopOverlay = document.querySelector('.shop-screen-overlay');
-    if (viewBoardBtn && shopOverlay) {
-        let isPeeking = false;
-        viewBoardBtn.onclick = () => {
-            isPeeking = !isPeeking;
-            if (isPeeking) {
-                shopOverlay.style.opacity = '0';
-                shopOverlay.style.transition = 'opacity 0.3s ease';
-                viewBoardBtn.innerText = '👁 Hide Board';
-            } else {
-                shopOverlay.style.opacity = '1';
-                viewBoardBtn.innerText = '👁 View Board';
-            }
-        };
     }
-}
 
 export function buyItem(id, saveCallback, renderCallback) {
     const item = shopItems.find(i => i.id === id);

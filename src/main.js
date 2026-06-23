@@ -691,6 +691,13 @@ function checkWinLoss() {
         const stats = getStats();
         checkAchievements(gameState, stats, { roundWon: true, totalWords: stats.totalWords, defeatedBosses: [...gameState.defeatedBosses] });
     } else if (gameState.handsLeft <= 0) {
+        const stats = getStats();
+        document.getElementById('loss-score').innerText = gameState.score;
+        document.getElementById('loss-target').innerText = gameState.targetScore;
+        document.getElementById('loss-round').innerText = gameState.currentRound;
+        document.getElementById('loss-gold').innerText = gameState.gold;
+        document.getElementById('loss-best-word').innerText = stats.bestScoreWord ? `${stats.bestScoreWord} (+${stats.bestScoreWordScore})` : '—';
+        document.getElementById('loss-longest-word').innerText = stats.longestWordLen > 0 ? `${stats.longestWord} (${stats.longestWordLen})` : '—';
         document.getElementById('loss-modal').style.display = 'flex';
         audio.roundLoss();
     }
@@ -1161,6 +1168,9 @@ function setupEventListeners() {
             });
         }
 
+        // Save pre-submission score for incremental display during animation
+        const preScore = gameState.score;
+
         gameState.score += turnScore;
         gameState.gold += turnGold;
         gameState.handsLeft--;
@@ -1315,7 +1325,9 @@ function setupEventListeners() {
 
         // Show the scoring animation on the board (non-blocking visual feedback)
         if (wordsData.length > 0) {
-            await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null, baseComboLevel);
+            // Reset score display to pre-submission value so the animation can increment it piece by piece
+            document.getElementById('score').innerText = preScore;
+            await showScoringAnimation(wordsData, turnScore, turnGold, bossMessage || null, baseComboLevel, preScore);
             // Brief fade highlight on scored tiles
             const scoredTiles = document.querySelectorAll('#board .tile.locked');
             if (scoredTiles.length > 0) {
@@ -1410,7 +1422,7 @@ function setupEventListeners() {
         renderUI();
     };
 
-    document.getElementById('new-run-btn').onclick = () => {
+    document.getElementById('main-menu-btn').onclick = () => {
         document.getElementById('loss-modal').style.display = 'none';
         deleteSavedGame();
         showStartScreen();

@@ -87,8 +87,7 @@
                 <span class="shop-gold-icon">🪙</span>
                 <span id="shop-gold-amount">0</span> Gold
             </div>
-            <button id="view-board-toggle" class="shop-view-board-btn">👁 View Board</button>
-        </div>
+            </div>
 
         <div class="shop-screen-body">
             <h2 class="shop-title">Roguelike Shop</h2>
@@ -133,8 +132,30 @@
 <div id="loss-modal">
     <div id="loss-content">
         <h1 style="color: var(--invalid-color);">GAME OVER</h1>
-        <p>You ran out of hands before reaching the target score.</p>
-        <button id="new-run-btn" style="width: 100%; background-color: var(--invalid-color);">Restart Run</button>
+        <p style="opacity: 0.8; margin-bottom: 16px;">You ran out of hands before reaching the target score.</p>
+        <div id="loss-stats" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; font-family: 'Georgia', serif;">
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="opacity: 0.7;">Score</span>
+                <span><span id="loss-score">0</span> / <span id="loss-target">0</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="opacity: 0.7;">Round</span>
+                <span id="loss-round">1</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="opacity: 0.7;">Gold</span>
+                <span id="loss-gold">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="opacity: 0.7;">Best Word</span>
+                <span id="loss-best-word" style="text-align: right; max-width: 60%; word-wrap: break-word;">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                <span style="opacity: 0.7;">Longest Word</span>
+                <span id="loss-longest-word" style="text-align: right;">—</span>
+            </div>
+        </div>
+        <button id="main-menu-btn" style="width: 100%; background-color: var(--invalid-color);">Main Menu</button>
     </div>
 </div>
 

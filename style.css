@@ -2817,7 +2817,6 @@ body {
 }
 
 #game-container {
-    gap: max(6px, calc(var(--cell-size, 60px) * 0.15));
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;

@@ -697,60 +697,51 @@ function checkWinLoss() {
 }
 
 function setupEventListeners() {
-    // Theme toggle
-    const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-        const savedTheme = localStorage.getItem('scruggle_theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('theme-light');
-            themeBtn.innerText = 'Light';
-        } else {
-            themeBtn.innerText = 'Dark';
-        }
-        themeBtn.onclick = () => {
-            const isLight = document.body.classList.toggle('theme-light');
-            themeBtn.innerText = isLight ? 'Light' : 'Dark';
-            localStorage.setItem('scruggle_theme', isLight ? 'light' : 'dark');
-        };
+    // ── Theme state (persisted across menu opens) ──────────────
+    function toggleTheme() {
+        const isLight = document.body.classList.toggle('theme-light');
+        localStorage.setItem('scruggle_theme', isLight ? 'light' : 'dark');
+    }
+    const savedTheme = localStorage.getItem('scruggle_theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('theme-light');
     }
 
-    // Start screen shortcuts button
-    const kbdStartBtn = document.getElementById('open-kbd-start-btn');
-    if (kbdStartBtn) {
-        kbdStartBtn.onclick = () => {
-            const kbdModal = document.getElementById('kbd-shortcuts-modal');
-            if (kbdModal) kbdModal.style.display = 'flex';
-        };
+    // ── Keyboard shortcuts modal ───────────────────────────────
+    const kbdModal = document.getElementById('kbd-shortcuts-modal');
+    const closeKbdBtn = document.getElementById('close-kbd-btn');
+    function openKbdModal() { if (kbdModal) kbdModal.style.display = 'flex'; }
+    function closeKbdModal() { if (kbdModal) kbdModal.style.display = 'none'; }
+    if (closeKbdBtn) closeKbdBtn.onclick = closeKbdModal;
+    if (kbdModal) {
+        kbdModal.addEventListener('click', (e) => {
+            if (e.target === kbdModal) closeKbdModal();
+        });
     }
 
-    // Tutorial button from start screen
-    const tutorialBtn = document.getElementById('open-tutorial-btn');
-    if (tutorialBtn) {
-        tutorialBtn.onclick = () => {
-            showTutorial();
-        };
+    // ── Tutorial ───────────────────────────────────────────────
+    // showTutorial() is imported; called directly from menu
+
+    // ── Mute state (persisted) ─────────────────────────────────
+    function toggleMute() {
+        const muted = audio.toggle();
+        // Update the menu item icon if it exists
+        const soundItem = document.querySelector('.menu-item[data-action="sound"]');
+        if (soundItem) soundItem.innerHTML = muted ? '🔇  Sound' : '🔊  Sound';
+    }
+    // Initialize mute state in menu item on open
+    function updateSoundMenuItem() {
+        const soundItem = document.querySelector('.menu-item[data-action="sound"]');
+        if (soundItem) soundItem.innerHTML = audio.isMuted() ? '🔇  Sound' : '🔊  Sound';
     }
 
-    // Menu Drawers
-    const openStatsBtn = document.getElementById('open-stats-btn');
-    const statsDrawer = document.getElementById('stats-drawer');
-    const closeStatsBtn = document.getElementById('close-stats-btn');
-
-    const openDictBtn = document.getElementById('open-dict-btn');
-    const openDictGameBtn = document.getElementById('view-dict-game-btn');
-    const dictDrawer = document.getElementById('dictionary-drawer');
-    const closeDictBtn = document.getElementById('close-dict-btn');
-
-    // Drawer backdrop helper
+    // ── Drawer helpers (shared by all drawers) ─────────────────
     const backdrop = document.getElementById('drawer-backdrop');
     let openDrawers = new Set();
     function updateDrawerBackdrop() {
         if (!backdrop) return;
-        if (openDrawers.size > 0) {
-            backdrop.classList.add('show');
-        } else {
-            backdrop.classList.remove('show');
-        }
+        if (openDrawers.size > 0) backdrop.classList.add('show');
+        else backdrop.classList.remove('show');
     }
     function openDrawer(el) {
         el.classList.add('open');
@@ -763,13 +754,9 @@ function setupEventListeners() {
         updateDrawerBackdrop();
     }
     function toggleDrawer(el) {
-        if (el.classList.contains('open')) {
-            closeDrawer(el);
-        } else {
-            openDrawer(el);
-        }
+        if (el.classList.contains('open')) closeDrawer(el);
+        else openDrawer(el);
     }
-    // Close any open drawer when backdrop is clicked
     if (backdrop) {
         backdrop.addEventListener('click', () => {
             openDrawers.forEach(d => d.classList.remove('open'));
@@ -778,34 +765,76 @@ function setupEventListeners() {
         });
     }
 
-    if (openStatsBtn && statsDrawer) {
-        openStatsBtn.onclick = () => {
-            renderStatsDrawer();
-            openDrawer(statsDrawer);
-        };
-    }
-    if (closeStatsBtn && statsDrawer) {
-        closeStatsBtn.onclick = () => closeDrawer(statsDrawer);
+    // ── Menu Drawer ────────────────────────────────────────────
+    const menuDrawer = document.getElementById('menu-drawer');
+    const closeMenuBtn = document.getElementById('close-menu-btn');
+    // Buttons that open the menu
+    const openMenuStartBtn = document.getElementById('open-menu-start-btn');
+    const menuGameBtn = document.getElementById('menu-btn');
+
+    function openMenu() {
+        // Show/hide context-sensitive items
+        const inGame = document.getElementById('game-container').style.display === 'flex';
+        const resetBtn = document.getElementById('menu-reset-btn');
+        const returnBtn = document.getElementById('menu-return-btn');
+        if (resetBtn) resetBtn.style.display = inGame ? '' : 'none';
+        if (returnBtn) returnBtn.style.display = inGame ? '' : 'none';
+
+        updateSoundMenuItem();
+        openDrawer(menuDrawer);
     }
 
-    // Achievements Drawer
-    const openAchBtn = document.getElementById('open-ach-btn');
-    const achDrawer = document.getElementById('achievements-drawer');
-    const closeAchBtn = document.getElementById('close-ach-btn');
-    if (openAchBtn && achDrawer) {
-        openAchBtn.onclick = () => {
-            renderAchievementsList();
-            openDrawer(achDrawer);
-        };
-    }
-    if (closeAchBtn && achDrawer) {
-        closeAchBtn.onclick = () => closeDrawer(achDrawer);
-    }
+    if (openMenuStartBtn) openMenuStartBtn.onclick = openMenu;
+    if (menuGameBtn) menuGameBtn.onclick = openMenu;
+    if (closeMenuBtn) closeMenuBtn.onclick = () => closeDrawer(menuDrawer);
 
-    const toggleDict = () => toggleDrawer(dictDrawer);
-    if (openDictBtn) openDictBtn.onclick = toggleDict;
-    if (openDictGameBtn) openDictGameBtn.onclick = toggleDict;
-    if (closeDictBtn) closeDictBtn.onclick = () => closeDrawer(dictDrawer);
+    // Menu item actions
+    document.querySelectorAll('.menu-item[data-action]').forEach(item => {
+        item.onclick = () => {
+            const action = item.dataset.action;
+            closeDrawer(menuDrawer);
+
+            switch (action) {
+                case 'stats':
+                    renderStatsDrawer();
+                    openDrawer(document.getElementById('stats-drawer'));
+                    break;
+                case 'achievements':
+                    renderAchievementsList();
+                    openDrawer(document.getElementById('achievements-drawer'));
+                    break;
+                case 'dictionary':
+                    toggleDrawer(document.getElementById('dictionary-drawer'));
+                    break;
+                case 'shortcuts':
+                    openKbdModal();
+                    break;
+                case 'tutorial':
+                    showTutorial();
+                    break;
+                case 'sound':
+                    toggleMute();
+                    break;
+                case 'theme':
+                    toggleTheme();
+                    break;
+                case 'reset':
+                    if (confirm("Reset current run?")) {
+                        deleteSavedGame();
+                        location.reload();
+                    }
+                    break;
+                case 'return':
+                    if (confirm("Return to main menu? Current progress will be saved.")) {
+                        saveGame();
+                        document.getElementById('game-container').style.display = 'none';
+                        document.getElementById('start-screen').style.display = 'flex';
+                        showStartScreen();
+                    }
+                    break;
+            }
+        };
+    });
 
     // New Run Flow
     const newRunTriggerBtn = document.getElementById('new-run-trigger-btn');
@@ -1371,13 +1400,6 @@ function setupEventListeners() {
         showStartScreen();
     };
 
-    document.getElementById('reset-btn').onclick = () => {
-        if (confirm("Reset current run?")) {
-            deleteSavedGame();
-            location.reload();
-        }
-    };
-
     // Scoring animation continue button
     document.getElementById('scoring-continue-btn').onclick = () => {
         closeScoringAnimation();
@@ -1414,26 +1436,6 @@ function setupEventListeners() {
         }
     };
 
-    // Mute toggle
-    const muteBtn = document.getElementById('mute-btn');
-    if (muteBtn) {
-        // Initialize from saved state
-        muteBtn.innerText = audio.isMuted() ? '🔇' : '🔊';
-        muteBtn.onclick = () => {
-            const muted = audio.toggle();
-            muteBtn.innerText = muted ? '🔇' : '🔊';
-        };
-    }
-
-    // Stats drawer (gameplay button)
-    const viewStatsGameBtn = document.getElementById('view-stats-game-btn');
-    if (viewStatsGameBtn) {
-        viewStatsGameBtn.onclick = () => {
-            renderStatsDrawer();
-            openDrawer(statsDrawer);
-        };
-    }
-
     // Achievement unlock listener
     document.addEventListener('achievement-unlocked', () => {
         audio.achievementUnlock();
@@ -1469,24 +1471,7 @@ function setupEventListeners() {
         };
     }
 
-    // ===== Keyboard Shortcuts Modal =====
-    const kbdModal = document.getElementById('kbd-shortcuts-modal');
-    const kbdBtn = document.getElementById('keyboard-shortcuts-btn');
-    const closeKbdBtn = document.getElementById('close-kbd-btn');
-
-    function openKbdModal() {
-        if (kbdModal) kbdModal.style.display = 'flex';
-    }
-    function closeKbdModal() {
-        if (kbdModal) kbdModal.style.display = 'none';
-    }
-    if (kbdBtn) kbdBtn.onclick = openKbdModal;
-    if (closeKbdBtn) closeKbdBtn.onclick = closeKbdModal;
-    if (kbdModal) {
-        kbdModal.addEventListener('click', (e) => {
-            if (e.target === kbdModal) closeKbdModal();
-        });
-    }
+    // Escape key checks kbdModal via closeKbdModal from setupEventListeners
 
     // ===== Global Keyboard Shortcuts =====
     function closeAllModalsAndDrawers() {

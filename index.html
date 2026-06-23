@@ -17,15 +17,8 @@
             <div class="menu-buttons">
                 <button id="continue-run-btn" class="menu-btn continue-btn">Continue Run</button>
                 <button id="new-run-trigger-btn" class="menu-btn new-btn">New Run</button>
-                <div style="display: flex; gap: 10px;">
-                    <button id="open-stats-btn" class="menu-btn menu-btn-sm" style="background-color: #7b1fa2;">Stats</button>
-                    <button id="open-ach-btn" class="menu-btn menu-btn-sm" style="background-color: #c9a227;">Achievements</button>
-                    <button id="open-dict-btn" class="menu-btn menu-btn-sm" style="background-color: #5d4037;">Dictionary</button>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 5px;">
-                    <button id="theme-toggle-btn" class="menu-btn menu-btn-sm" style="background-color: #455a64;">Dark</button>
-                    <button id="open-kbd-start-btn" class="menu-btn menu-btn-sm" style="background-color: #4a6e52;">Shortcuts</button>
-                    <button id="open-tutorial-btn" class="menu-btn menu-btn-sm" style="background-color: #1565c0;">How to Play</button>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="open-menu-start-btn" class="menu-btn menu-btn-sm" style="background-color: #37474f;">☰ Menu</button>
                 </div>
             </div>
         </div>
@@ -68,10 +61,7 @@
         <div style="display: flex; gap: 5px;">
             <button id="view-inv-btn" class="stats-badge" style="background-color: #7b1fa2;">Inv</button>
             <button id="view-bag-btn" class="stats-badge">Bag (<span id="bag-count-badge">0</span>)</button>
-            <button id="view-dict-game-btn" class="stats-badge" style="background-color: #5d4037;">Dict</button>
-            <button id="mute-btn" class="stats-badge" style="background-color: #555;" title="Toggle Sound">🔊</button>
-            <button id="view-stats-game-btn" class="stats-badge" style="background-color: #7b1fa2;" title="View Stats">📊</button>
-            <button id="keyboard-shortcuts-btn" class="stats-badge" style="background-color: #4a6e52;" title="Keyboard Shortcuts">⌨</button>
+            <button id="menu-btn" class="stats-badge" style="background-color: #37474f;" title="Menu">☰ Menu</button>
         </div>
     </div>
     <div id="sticker-banner" style="display: none;"></div>
@@ -87,7 +77,6 @@
     <div id="controls">
         <button id="submit-btn" disabled>Submit Word</button>
         <button id="swap-btn">Swap Selected</button>
-        <button id="reset-btn" style="background-color: var(--invalid-color);">Reset Game</button>
     </div>
 </div>
 
@@ -262,6 +251,26 @@
     </div>
     <div id="dict-results">
         <p style="opacity: 0.7; font-style: italic; font-size: 14px;">Search over 270,000 valid words.</p>
+    </div>
+</div>
+
+<!-- ===== Menu Drawer ===== -->
+<div id="menu-drawer" class="drawer">
+    <div class="drawer-header">
+        <h3>☰ Menu</h3>
+        <button id="close-menu-btn" class="close-drawer-btn">&times;</button>
+    </div>
+    <div id="menu-drawer-items" class="menu-drawer-items">
+        <button class="menu-item" data-action="stats">📊  Stats</button>
+        <button class="menu-item" data-action="achievements">🏆  Achievements</button>
+        <button class="menu-item" data-action="dictionary">📖  Dictionary</button>
+        <button class="menu-item" data-action="shortcuts">⌨️  Keyboard Shortcuts</button>
+        <button class="menu-item" data-action="tutorial">📚  How to Play</button>
+        <button class="menu-item" data-action="sound">🔊  Sound</button>
+        <button class="menu-item" data-action="theme">🌓  Theme</button>
+        <hr class="menu-divider">
+        <button class="menu-item menu-item-danger" data-action="reset" id="menu-reset-btn" style="display:none;">🗑️  Reset Game</button>
+        <button class="menu-item" data-action="return" id="menu-return-btn" style="display:none;">🏠  Return to Menu</button>
     </div>
 </div>
 

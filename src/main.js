@@ -14,6 +14,7 @@ import { loadAchievements, checkAchievements, getUnlockedCount } from './achieve
 import { BOSSES, getBossForRound, applyBossReward } from './bosses.js';
 import { showScoringAnimation, closeScoringAnimation } from './scoring_animation.js';
 import audio from './audio.js';
+import { showTutorial, hasSeenTutorial } from './tutorial.js';
 
 function fitBoard() {
     const root = document.documentElement;
@@ -722,6 +723,14 @@ function setupEventListeners() {
         };
     }
 
+    // Tutorial button from start screen
+    const tutorialBtn = document.getElementById('open-tutorial-btn');
+    if (tutorialBtn) {
+        tutorialBtn.onclick = () => {
+            showTutorial();
+        };
+    }
+
     // Menu Drawers
     const openStatsBtn = document.getElementById('open-stats-btn');
     const statsDrawer = document.getElementById('stats-drawer');
@@ -854,7 +863,11 @@ function setupEventListeners() {
         }
     };
 
-    const startNewRun = () => {
+    const startNewRun = async () => {
+        // Show tutorial on first-ever game start
+        if (!hasSeenTutorial()) {
+            await showTutorial();
+        }
         incrementRuns();
         initRound(true);
         document.getElementById('start-screen').style.display = 'none';

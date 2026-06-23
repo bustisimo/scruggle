@@ -1447,6 +1447,27 @@ function setupEventListeners() {
         }
     };
 
+    // ── Dictionary drawer close ────────────────────────────────
+    const dictDrawer = document.getElementById('dictionary-drawer');
+    const closeDictBtn = document.getElementById('close-dict-btn');
+    if (closeDictBtn && dictDrawer) {
+        closeDictBtn.onclick = () => closeDrawer(dictDrawer);
+    }
+
+    // ── Achievements drawer close ──────────────────────────────
+    const achDrawer = document.getElementById('achievements-drawer');
+    const closeAchBtn = document.getElementById('close-ach-btn');
+    if (closeAchBtn && achDrawer) {
+        closeAchBtn.onclick = () => closeDrawer(achDrawer);
+    }
+
+    // ── Stats drawer close ─────────────────────────────────────
+    const statsDrawer = document.getElementById('stats-drawer');
+    const closeStatsBtn = document.getElementById('close-stats-btn');
+    if (closeStatsBtn && statsDrawer) {
+        closeStatsBtn.onclick = () => closeDrawer(statsDrawer);
+    }
+
     // Achievement unlock listener
     document.addEventListener('achievement-unlocked', () => {
         audio.achievementUnlock();

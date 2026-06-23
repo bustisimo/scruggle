@@ -2907,18 +2907,24 @@ body {
         justify-content: flex-start;
     }
     #game-container {
-        gap: 4px;
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        max-width: 100vw;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
+        height: 100dvh;
+        gap: 4px;
+        justify-content: flex-start;
+        overflow-y: auto;
+        box-sizing: border-box;
     }
 
-    /* ── Inventory ── */
+    /* ── Inventory — hide when empty ── */
     #inventory {
         gap: 4px;
         margin: 0;
+    }
+    #inventory:empty {
+        display: none;
     }
 
     /* ── Scoreboard ── */

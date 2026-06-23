@@ -812,7 +812,8 @@ function setupEventListeners() {
             }
             menuView.style.display = 'none';
             bagView.style.display = 'block';
-            renderFontBagCards(hasSave);
+            // User confirmed overwrite — treat as fresh even though save file still exists
+            renderFontBagCards(false);
         };
     }
 

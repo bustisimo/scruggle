@@ -187,6 +187,43 @@ body.theme-light {
     right: 5px;
 }
 
+/* ── Premium cell tooltip — shows full name on tap ─────────── */
+.premium-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: rgba(20, 35, 28, 0.95);
+    color: #fdfaf2;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(253,250,242,0.15);
+    border: 1px solid rgba(253,250,242,0.2);
+}
+.premium-tooltip.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.premium-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid rgba(20, 35, 28, 0.95);
+}
+
 /* Ink Stylings */
 .ink-indicator {
     position: absolute;
@@ -2804,16 +2841,16 @@ body {
 
 /* ── Mobile-only overrides (screen width < 600px) ──────────── */
 /* Ensures ALL game UI fits on small phone screens — no cropping, no overflow */
-/* Fills the viewport so there's no empty green space above/below the felt */
+/* Content starts at top with minimal padding — green felt fills rest of viewport */
 @media (max-width: 600px) {
     /* ── Layout foundation ── */
     body {
-        padding: 4px 4px 0 4px;
+        padding: 0;
         overflow-x: hidden;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: auto;
         min-height: 100dvh;
-        justify-content: center;
+        justify-content: flex-start;
     }
     #game-container {
         gap: 4px;

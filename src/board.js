@@ -46,6 +46,40 @@ export function renderInventory() {
     });
 }
 
+const PREMIUM_NAMES = {
+    'DL': 'Double Letter',
+    'TL': 'Triple Letter',
+    'DW': 'Double Word',
+    'TW': 'Triple Word',
+    'QW': 'Quadruple Word',
+    'GM': 'Gold Multiplier',
+    'NM': 'Negative Multiplier',
+    'center': '★ Center Bonus'
+};
+
+/** Show a floating tooltip above a premium cell with the full name */
+function showPremiumTooltip(cell, type) {
+    const existing = document.querySelector('.premium-tooltip');
+    if (existing) existing.remove();
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'premium-tooltip';
+    tooltip.innerText = PREMIUM_NAMES[type] || type;
+
+    const rect = cell.getBoundingClientRect();
+    const tooltipW = 130;
+    tooltip.style.left = Math.max(6, Math.min(window.innerWidth - tooltipW - 6, rect.left + rect.width / 2 - tooltipW / 2)) + 'px';
+    tooltip.style.top = (rect.top - 8) + 'px';
+
+    document.body.appendChild(tooltip);
+    requestAnimationFrame(() => tooltip.classList.add('show'));
+
+    setTimeout(() => {
+        tooltip.classList.remove('show');
+        setTimeout(() => { if (tooltip.parentNode) tooltip.remove(); }, 250);
+    }, 1400);
+}
+
 export function renderBoard(onCellClick, renderCallback) {
     const boardEl = document.getElementById('board');
     boardEl.innerHTML = '';
@@ -84,6 +118,17 @@ export function renderBoard(onCellClick, renderCallback) {
                 const halo = document.createElement('div');
                 halo.className = 'center-halo-ring';
                 cell.appendChild(halo);
+            }
+
+            // Premium cell tooltip — tap any empty premium tile to see its full name
+            const premiumType = mult || (x === startX && y === startY ? 'center' : null);
+            if (premiumType) {
+                cell.addEventListener('click', (e) => {
+                    // Only show on empty cells (no tile placed)
+                    if (!gameState.board[y][x]) {
+                        showPremiumTooltip(cell, premiumType);
+                    }
+                }, { passive: true });
             }
 
             cell.onclick = () => onCellClick(x, y);

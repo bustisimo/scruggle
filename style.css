@@ -2757,7 +2757,6 @@ body::before {
 /* JS sets --cell-size on :root dynamically based on viewport.
    Desktop default (60px) is the fallback. Everything scales from it. */
 body {
-    padding: max(6px, calc(var(--cell-size, 60px) * 0.15));
     overflow-x: hidden;
 }
 
@@ -2857,6 +2856,14 @@ body {
         width: 100%;
         max-width: 100vw;
         overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* ── Inventory ── */
+    #inventory {
+        gap: 4px;
+        margin: 0;
     }
 
     /* ── Scoreboard ── */
@@ -2865,7 +2872,7 @@ body {
         padding: 4px 10px;
         border-width: 3px;
         border-radius: 8px;
-        margin-bottom: 4px;
+        margin: 0 0 4px 0;
     }
     .score-value {
         font-size: 22px;

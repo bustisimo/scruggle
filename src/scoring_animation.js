@@ -85,133 +85,135 @@ function createWordCard(wd) {
     header.innerText = wd.word;
     card.appendChild(header);
 
-    // Tile row: tile + plus signs
-    const tileRow = document.createElement('div');
-    tileRow.className = 'scoring-tile-row';
+    const isBonusCard = wd.tiles.length === 0;
 
-    wd.tiles.forEach((tile, ti) => {
-        const tileEl = document.createElement('div');
-        tileEl.className = 'scoring-tile';
-        tileEl.style.transform = 'translateY(60px) scale(0.7)';
-        tileEl.style.opacity = '0';
+    if (!isBonusCard) {
+        // Tile row: tile + plus signs (only for real words)
+        const tileRow = document.createElement('div');
+        tileRow.className = 'scoring-tile-row';
 
-        // Ink styling
-        if (tile.ink) {
-            tileEl.classList.add(`ink-${tile.ink}`);
-            const indicator = document.createElement('span');
-            indicator.className = 'scoring-tile-ink';
-            indicator.innerText = tile.ink.toUpperCase();
-            tileEl.appendChild(indicator);
-        }
+        wd.tiles.forEach((tile, ti) => {
+            const tileEl = document.createElement('div');
+            tileEl.className = 'scoring-tile';
+            tileEl.style.transform = 'translateY(60px) scale(0.7)';
+            tileEl.style.opacity = '0';
 
-        // Letter
-        const letterSpan = document.createElement('span');
-        letterSpan.className = 'scoring-tile-letter';
-        letterSpan.innerText = tile.letter;
-        tileEl.appendChild(letterSpan);
+            // Ink styling
+            if (tile.ink) {
+                tileEl.classList.add(`ink-${tile.ink}`);
+                const indicator = document.createElement('span');
+                indicator.className = 'scoring-tile-ink';
+                indicator.innerText = tile.ink.toUpperCase();
+                tileEl.appendChild(indicator);
+            }
 
-        // Played value (after multipliers)
-        const valueSpan = document.createElement('span');
-        valueSpan.className = 'scoring-tile-value';
-        valueSpan.innerText = tile.playedValue;
-        tileEl.appendChild(valueSpan);
+            // Letter
+            const letterSpan = document.createElement('span');
+            letterSpan.className = 'scoring-tile-letter';
+            letterSpan.innerText = tile.letter;
+            tileEl.appendChild(letterSpan);
 
-        // Multiplier badge (DL/TL)
-        if (tile.multiplierBadge) {
-            const badge = document.createElement('span');
-            badge.className = 'scoring-tile-badge';
-            badge.innerText = tile.multiplierBadge;
-            tileEl.appendChild(badge);
-        }
+            // Played value (after multipliers)
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'scoring-tile-value';
+            valueSpan.innerText = tile.playedValue;
+            tileEl.appendChild(valueSpan);
 
-        tileRow.appendChild(tileEl);
+            // Multiplier badge (DL/TL)
+            if (tile.multiplierBadge) {
+                const badge = document.createElement('span');
+                badge.className = 'scoring-tile-badge';
+                badge.innerText = tile.multiplierBadge;
+                tileEl.appendChild(badge);
+            }
 
-        // Plus sign between tiles
-        if (ti < wd.tiles.length - 1) {
-            const plus = document.createElement('span');
-            plus.className = 'scoring-tile-plus';
-            plus.innerText = '+';
-            plus.style.opacity = '0';
-            tileRow.appendChild(plus);
-        }
-    });
+            tileRow.appendChild(tileEl);
 
-    card.appendChild(tileRow);
-
-    // Results row
-    const results = document.createElement('div');
-    results.className = 'scoring-word-results';
-
-    // Letter sum
-    const sumEl = document.createElement('span');
-    sumEl.className = 'scoring-result-item';
-    sumEl.innerText = `Sum: ${wd.letterSum}`;
-    results.appendChild(sumEl);
-
-    // Multiplier display
-    if (wd.multiplierText) {
-        const multEl = document.createElement('span');
-        multEl.className = 'scoring-result-item scoring-result-mult';
-        multEl.innerText = `×${wd.multiplierText}`;
-        results.appendChild(multEl);
-    }
-
-    // Equals arrow
-    const arrow = document.createElement('span');
-    arrow.className = 'scoring-result-item';
-    arrow.innerText = '=';
-    results.appendChild(arrow);
-
-    // Word score
-    const scoreEl = document.createElement('span');
-    scoreEl.className = 'scoring-result-item scoring-result-score';
-    // Show short-word bonus inline when active (Word Eater boss)
-    const totalWordPts = wd.wordScore + (wd.shortWordBonus || 0);
-    if (wd.shortWordBonus) {
-        scoreEl.innerText = `${wd.wordScore}+${wd.shortWordBonus} WordEtr`;
-        scoreEl.title = `${totalWordPts} pts total (${wd.wordScore} base + ${wd.shortWordBonus} short-word bonus)`;
-    } else {
-        scoreEl.innerText = `${wd.wordScore} pts`;
-    }
-    results.appendChild(scoreEl);
-
-    // Gold badge
-    const goldEl = document.createElement('span');
-    goldEl.className = 'scoring-result-item scoring-result-gold';
-    goldEl.innerText = `+${wd.wordGold} 🪙`;
-    results.appendChild(goldEl);
-
-    // Bonus tags (inks, stickers)
-    if (wd.bonusTexts && wd.bonusTexts.length > 0) {
-        const bonusRow = document.createElement('div');
-        bonusRow.className = 'scoring-word-bonuses';
-        wd.bonusTexts.forEach(bt => {
-            const b = document.createElement('span');
-            b.className = 'scoring-bonus-tag';
-            b.innerText = bt;
-            bonusRow.appendChild(b);
+            // Plus sign between tiles
+            if (ti < wd.tiles.length - 1) {
+                const plus = document.createElement('span');
+                plus.className = 'scoring-tile-plus';
+                plus.innerText = '+';
+                plus.style.opacity = '0';
+                tileRow.appendChild(plus);
+            }
         });
-        results.appendChild(bonusRow);
+
+        card.appendChild(tileRow);
     }
 
-    // All result items start hidden
-    results.querySelectorAll('.scoring-result-item').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(8px)';
-    });
-
-    if (wd.bonusTexts && wd.bonusTexts.length > 0) {
-        const bonusRow = results.querySelector('.scoring-word-bonuses');
-        if (bonusRow) {
-            bonusRow.style.opacity = '0';
-            bonusRow.querySelectorAll('.scoring-bonus-tag').forEach(t => {
-                t.style.opacity = '0';
-                t.style.transform = 'translateY(6px)';
+    // Results row — simplified for word cards, omitted for bonus cards
+    if (isBonusCard) {
+        // Bonus cards (combo, bookmarks): just show bonus tags directly below header
+        if (wd.bonusTexts && wd.bonusTexts.length > 0) {
+            const bonusRow = document.createElement('div');
+            bonusRow.className = 'scoring-word-bonuses scoring-bonuses-no-tiles';
+            wd.bonusTexts.forEach(bt => {
+                const b = document.createElement('span');
+                b.className = 'scoring-bonus-tag';
+                b.innerText = bt;
+                b.style.opacity = '0';
+                b.style.transform = 'translateY(6px)';
+                bonusRow.appendChild(b);
             });
+            card.appendChild(bonusRow);
         }
+    } else {
+        // Word cards: clean score + gold (no "Sum: X = Y pts" math)
+        const results = document.createElement('div');
+        results.className = 'scoring-word-results';
+
+        // Word score (with counter animation for scoring-animation.js)
+        const scoreEl = document.createElement('span');
+        scoreEl.className = 'scoring-result-item scoring-result-score';
+        const totalWordPts = wd.wordScore + (wd.shortWordBonus || 0);
+        if (wd.shortWordBonus) {
+            scoreEl.innerText = `${wd.wordScore}+${wd.shortWordBonus} WordEtr`;
+            scoreEl.title = `${totalWordPts} pts total (${wd.wordScore} base + ${wd.shortWordBonus} short-word bonus)`;
+        } else {
+            scoreEl.innerText = `${wd.wordScore} pts`;
+        }
+        results.appendChild(scoreEl);
+
+        // Gold badge
+        const goldEl = document.createElement('span');
+        goldEl.className = 'scoring-result-item scoring-result-gold';
+        goldEl.innerText = `+${wd.wordGold} 🪙`;
+        results.appendChild(goldEl);
+
+        // Bonus tags (inks, stickers)
+        if (wd.bonusTexts && wd.bonusTexts.length > 0) {
+            const bonusRow = document.createElement('div');
+            bonusRow.className = 'scoring-word-bonuses';
+            wd.bonusTexts.forEach(bt => {
+                const b = document.createElement('span');
+                b.className = 'scoring-bonus-tag';
+                b.innerText = bt;
+                bonusRow.appendChild(b);
+            });
+            results.appendChild(bonusRow);
+        }
+
+        // All result items start hidden
+        results.querySelectorAll('.scoring-result-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(8px)';
+        });
+
+        if (wd.bonusTexts && wd.bonusTexts.length > 0) {
+            const bonusRow = results.querySelector('.scoring-word-bonuses');
+            if (bonusRow) {
+                bonusRow.style.opacity = '0';
+                bonusRow.querySelectorAll('.scoring-bonus-tag').forEach(t => {
+                    t.style.opacity = '0';
+                    t.style.transform = 'translateY(6px)';
+                });
+            }
+        }
+
+        card.appendChild(results);
     }
 
-    card.appendChild(results);
     return card;
 }
 
@@ -227,95 +229,106 @@ function animateSequentially(wordsData, turnScore, turnGold, continueBtn) {
 
         const card = cards[wordIndex];
         const wd = wordsData[wordIndex];
+        const isBonusCard = wd.tiles.length === 0;
 
         // Slide in the word card
         card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
         card.style.opacity = '1';
         card.style.transform = 'translateY(0)';
 
-        // Stagger tile fly-in
-        const tiles = card.querySelectorAll('.scoring-tile');
-        const pluses = card.querySelectorAll('.scoring-tile-plus');
-
-        tiles.forEach((tile, i) => {
-            setTimeout(() => {
-                tile.style.transition = 'opacity 0.35s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                tile.style.opacity = '1';
-                tile.style.transform = 'translateY(0) scale(1)';
-
-                // Show the following plus sign
-                if (pluses[i]) {
-                    setTimeout(() => {
-                        pluses[i].style.transition = 'opacity 0.2s ease';
-                        pluses[i].style.opacity = '0.6';
-                    }, 150);
-                }
-            }, 300 + i * 180);
-        });
-
-        // After all tiles have landed, reveal results
-        const tileAnimationsTime = 300 + tiles.length * 180 + 400;
-        const resultItems = card.querySelectorAll('.scoring-result-item');
-
-        setTimeout(() => {
-            // Reveal items one by one
-            let delay = 0;
-            resultItems.forEach((item, ri) => {
+        if (isBonusCard) {
+            // Bonus cards: just fade in the bonus tags
+            const tags = card.querySelectorAll('.scoring-bonus-tag');
+            tags.forEach((tag, ti) => {
                 setTimeout(() => {
-                    item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    item.style.opacity = '1';
-                    item.style.transform = 'translateY(0)';
-
-                    // Counter animation for score
-                    if (item.classList.contains('scoring-result-score')) {
-                        // Count up to the final display value
-                        const isShortWord = wd.shortWordBonus > 0;
-                        const animateTarget = isShortWord ? (wd.wordScore + wd.shortWordBonus) : wd.wordScore;
-                        const suffix = isShortWord ? 'pts' : 'pts';
-                        animateNumber(item, animateTarget, suffix, 600);
-                        if (isShortWord) {
-                            // After counter finishes, append the bonus breakdown
-                            setTimeout(() => {
-                                item.innerText = `${wd.wordScore}+${wd.shortWordBonus} WordEtr`;
-                            }, 650);
-                        }
-                    }
-                    // Gold just fades in
-                    if (item.classList.contains('scoring-result-gold')) {
-                        // Already showing text
-                    }
-                }, delay);
-                delay += 350;
+                    tag.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    tag.style.opacity = '1';
+                    tag.style.transform = 'translateY(0)';
+                }, 300 + ti * 180);
             });
-
-            // After result items, show bonus tags if any
-            const bonusRow = card.querySelector('.scoring-word-bonuses');
-            if (bonusRow) {
-                setTimeout(() => {
-                    bonusRow.style.transition = 'opacity 0.3s ease';
-                    bonusRow.style.opacity = '1';
-                    const tags = bonusRow.querySelectorAll('.scoring-bonus-tag');
-                    tags.forEach((tag, ti) => {
-                        setTimeout(() => {
-                            tag.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            tag.style.opacity = '1';
-                            tag.style.transform = 'translateY(0)';
-                        }, ti * 150);
-                    });
-                }, delay + 200);
-            }
-
-            // Next word after this one finishes
-            const totalDelay = Math.max(
-                delay + (bonusRow ? 200 + (bonusRow.querySelectorAll('.scoring-bonus-tag').length * 150) : 0) + 300,
-                1500
-            );
+            // Advance to next card after tags settle
             setTimeout(() => {
                 wordIndex++;
                 setTimeout(animateNextWord, 300);
-            }, totalDelay);
+            }, 300 + tags.length * 180 + 600);
+        } else {
+            // Word cards: stagger tile fly-in
+            const tiles = card.querySelectorAll('.scoring-tile');
+            const pluses = card.querySelectorAll('.scoring-tile-plus');
 
-        }, tileAnimationsTime);
+            tiles.forEach((tile, i) => {
+                setTimeout(() => {
+                    tile.style.transition = 'opacity 0.35s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    tile.style.opacity = '1';
+                    tile.style.transform = 'translateY(0) scale(1)';
+
+                    // Show the following plus sign
+                    if (pluses[i]) {
+                        setTimeout(() => {
+                            pluses[i].style.transition = 'opacity 0.2s ease';
+                            pluses[i].style.opacity = '0.6';
+                        }, 150);
+                    }
+                }, 300 + i * 180);
+            });
+
+            // After all tiles have landed, reveal score + gold
+            const tileAnimationsTime = 300 + tiles.length * 180 + 400;
+            const resultItems = card.querySelectorAll('.scoring-result-item');
+
+            setTimeout(() => {
+                let delay = 0;
+                resultItems.forEach((item, ri) => {
+                    setTimeout(() => {
+                        item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+
+                        // Counter animation for score
+                        if (item.classList.contains('scoring-result-score')) {
+                            const isShortWord = wd.shortWordBonus > 0;
+                            const animateTarget = isShortWord ? (wd.wordScore + wd.shortWordBonus) : wd.wordScore;
+                            const suffix = 'pts';
+                            animateNumber(item, animateTarget, suffix, 600);
+                            if (isShortWord) {
+                                setTimeout(() => {
+                                    item.innerText = `${wd.wordScore}+${wd.shortWordBonus} WordEtr`;
+                                }, 650);
+                            }
+                        }
+                    }, delay);
+                    delay += 350;
+                });
+
+                // After result items, show bonus tags if any
+                const bonusRow = card.querySelector('.scoring-word-bonuses');
+                if (bonusRow) {
+                    setTimeout(() => {
+                        bonusRow.style.transition = 'opacity 0.3s ease';
+                        bonusRow.style.opacity = '1';
+                        const tags = bonusRow.querySelectorAll('.scoring-bonus-tag');
+                        tags.forEach((tag, ti) => {
+                            setTimeout(() => {
+                                tag.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                                tag.style.opacity = '1';
+                                tag.style.transform = 'translateY(0)';
+                            }, ti * 150);
+                        });
+                    }, delay + 200);
+                }
+
+                // Next word after this one finishes
+                const totalDelay = Math.max(
+                    delay + (bonusRow ? 200 + (bonusRow.querySelectorAll('.scoring-bonus-tag').length * 150) : 0) + 300,
+                    1500
+                );
+                setTimeout(() => {
+                    wordIndex++;
+                    setTimeout(animateNextWord, 300);
+                }, totalDelay);
+
+            }, tileAnimationsTime);
+        }
     }
 
     animateNextWord();

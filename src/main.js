@@ -1125,24 +1125,39 @@ function setupEventListeners() {
         gameState.combo++;
         // ─────────────────────────────────────────────────────────────
 
-        // If bookmark triggers changed totals, add a summary card
-        if (turnScore !== baseTurnScore || turnGold !== baseTurnGold) {
+        // Combo / Streak bonus card (separate from bookmarks — combos aren't bookmarks)
+        const bookmarkScoreDelta = turnScore - baseTurnScore - comboBonus;
+        const bookmarkGoldDelta = turnGold - baseTurnGold;
+
+        if (comboBonus > 0) {
+            const fires = baseComboLevel >= 5 ? '🔥🔥🔥' : baseComboLevel >= 3 ? '🔥🔥' : '🔥';
+            wordsData.push({
+                word: 'Combo',
+                tiles: [],
+                letterSum: 0,
+                wordMultiplier: 1,
+                multiplierText: null,
+                wordScore: 0,
+                wordGold: 0,
+                bonusTexts: [`${fires} Combo x${baseComboLevel} +${comboBonus}`],
+            });
+        }
+
+        // Bookmark / item trigger summary card (only when actual bookmark or sticker effects changed totals)
+        if (bookmarkScoreDelta > 0 || bookmarkGoldDelta > 0) {
             const diffParts = [];
-            if (comboBonus > 0) diffParts.push(`🔥 Combo +${comboBonus}`);
-            if (turnScore - baseTurnScore - comboBonus > 0) diffParts.push(`📊 Score +${turnScore - baseTurnScore - comboBonus}`);
-            if (turnGold !== baseTurnGold) diffParts.push(`🪙 Gold +${turnGold - baseTurnGold}`);
-            if (diffParts.length > 0) {
-                wordsData.push({
-                    word: 'Bookmarks',
-                    tiles: [],
-                    letterSum: 0,
-                    wordMultiplier: 1,
-                    multiplierText: null,
-                    wordScore: 0,
-                    wordGold: 0,
-                    bonusTexts: ['🔖 Bookmark Bonuses: ' + diffParts.join(', ')],
-                });
-            }
+            if (bookmarkScoreDelta > 0) diffParts.push(`📊 Score +${bookmarkScoreDelta}`);
+            if (bookmarkGoldDelta > 0) diffParts.push(`🪙 Gold +${bookmarkGoldDelta}`);
+            wordsData.push({
+                word: 'Bookmarks',
+                tiles: [],
+                letterSum: 0,
+                wordMultiplier: 1,
+                multiplierText: null,
+                wordScore: 0,
+                wordGold: 0,
+                bonusTexts: ['🔖 ' + diffParts.join(', ')],
+            });
         }
 
         gameState.score += turnScore;

@@ -2804,11 +2804,16 @@ body {
 
 /* ── Mobile-only overrides (screen width < 600px) ──────────── */
 /* Ensures ALL game UI fits on small phone screens — no cropping, no overflow */
+/* Fills the viewport so there's no empty green space above/below the felt */
 @media (max-width: 600px) {
     /* ── Layout foundation ── */
     body {
-        padding: 4px;
+        padding: 4px 4px 0 4px;
         overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: auto;
+        min-height: 100dvh;
+        justify-content: center;
     }
     #game-container {
         gap: 4px;
